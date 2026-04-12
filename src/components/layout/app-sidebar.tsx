@@ -1,11 +1,10 @@
 import * as React from "react"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router"
 import { LayoutDashboard, Route, Server, ChevronDown } from "lucide-react"
 
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -13,9 +12,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
 import {
@@ -25,28 +21,65 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { cn } from "@/lib/utils"
+import { useCreateNamespace, useNamespaces } from "@/hooks/use-config"
+import { namespacePath, useCurrentNamespace } from "@/hooks/use-namespace"
+import { INVALID_NAMESPACE_MESSAGE, isValidNamespaceName } from "@/lib/namespaces"
 
 const mainNavItems = [
   {
     title: "Dashboard",
-    url: "/",
+    subpath: "",
     icon: LayoutDashboard,
   },
   {
     title: "Routes",
-    url: "/routes",
+    subpath: "routes",
     icon: Route,
   },
   {
     title: "Upstream Pools",
-    url: "/upstreams",
+    subpath: "upstreams",
     icon: Server,
   },
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation()
+  const navigate = useNavigate()
+  const currentNamespace = useCurrentNamespace()
+  const { data: namespaceData, isLoading: isLoadingNamespaces } = useNamespaces()
+  const createNamespace = useCreateNamespace()
+  const namespaceBasePath = namespacePath(currentNamespace)
+  const currentSubpath = location.pathname.startsWith(namespaceBasePath)
+    ? location.pathname.slice(namespaceBasePath.length).replace(/^\/+/, "")
+    : ""
+
+  const handleNamespaceChange = (namespace: string) => {
+    navigate(namespacePath(namespace, currentSubpath))
+  }
+
+  const handleCreateNamespace = () => {
+    const nextNamespace = window.prompt("Enter a namespace name")
+    const trimmedNamespace = nextNamespace?.trim()
+
+    if (!trimmedNamespace) {
+      return
+    }
+
+    if (!isValidNamespaceName(trimmedNamespace)) {
+      window.alert(INVALID_NAMESPACE_MESSAGE)
+      return
+    }
+
+    createNamespace.mutate(trimmedNamespace, {
+      onSuccess: (createdNamespace) => {
+        navigate(namespacePath(createdNamespace.namespace, currentSubpath))
+      },
+      onError: (error) => {
+        window.alert(error.message)
+      },
+    })
+  }
 
   return (
     <Sidebar {...props}>
@@ -63,8 +96,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <Server className="size-4" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Proxy Admin</span>
-                    <span className="truncate text-xs text-muted-foreground">Raft HA Cluster</span>
+                    <span className="truncate font-semibold">{currentNamespace}</span>
+                    <span className="truncate text-xs text-muted-foreground">Namespace</span>
                   </div>
                   <ChevronDown className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -75,11 +108,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 align="start"
                 sideOffset={4}
               >
-                <DropdownMenuItem>
-                  Cluster Info
-                </DropdownMenuItem>
+                {isLoadingNamespaces ? <DropdownMenuItem disabled>Loading namespaces...</DropdownMenuItem> : null}
+                {namespaceData?.items.map((item) => (
+                  <DropdownMenuItem
+                    key={item.namespace}
+                    onClick={() => handleNamespaceChange(item.namespace)}
+                  >
+                    <div className="flex flex-col">
+                      <span>{item.namespace}</span>
+                      <span className="text-xs text-muted-foreground">{item.path}</span>
+                    </div>
+                  </DropdownMenuItem>
+                ))}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Documentation</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCreateNamespace} disabled={createNamespace.isPending}>
+                  {createNamespace.isPending ? "Creating..." : "Create Namespace"}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
@@ -94,9 +138,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={location.pathname === item.url}
+                    isActive={location.pathname === namespacePath(currentNamespace, item.subpath)}
                   >
-                    <Link to={item.url}>
+                    <Link to={namespacePath(currentNamespace, item.subpath)}>
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
                     </Link>

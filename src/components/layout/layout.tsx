@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom"
+import { Outlet } from "react-router"
 import { AppSidebar } from "./app-sidebar"
 import { Header } from "./header"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"

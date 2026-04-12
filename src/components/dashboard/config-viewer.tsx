@@ -5,9 +5,10 @@ import type { Config } from "@/lib/types"
 interface ConfigViewerProps {
   config: Config | undefined
   isLoading: boolean
+  namespace: string
 }
 
-export function ConfigViewer({ config, isLoading }: ConfigViewerProps) {
+export function ConfigViewer({ config, isLoading, namespace }: ConfigViewerProps) {
   const configJson = config ? JSON.stringify(config, null, 2) : ""
 
   return (
@@ -15,7 +16,7 @@ export function ConfigViewer({ config, isLoading }: ConfigViewerProps) {
       <CardHeader>
         <CardTitle>Current Configuration</CardTitle>
         <CardDescription>
-          Read-only view of the current reverse proxy configuration
+          Read-only view of the {namespace} namespace configuration
         </CardDescription>
       </CardHeader>
       <CardContent>
