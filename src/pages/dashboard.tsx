@@ -12,8 +12,8 @@ import { Badge } from "@/components/ui/badge";
 export function DashboardPage() {
   const namespace = useCurrentNamespace();
   const { data: config, isLoading: isConfigLoading } = useConfig(namespace);
-  const { data: status, isLoading: isStatusLoading } = useStatus();
-  const { data: runtime } = useRuntime();
+  const { data: status, isLoading: isStatusLoading, isError: isStatusError } = useStatus();
+  const { data: runtime, isLoading: isRuntimeLoading, isError: isRuntimeError } = useRuntime();
 
   return (
     <div className="space-y-6">
@@ -24,7 +24,7 @@ export function DashboardPage() {
         </div>
       </div>
 
-      <StatsCards status={status} isLoading={isStatusLoading} />
+      <StatsCards status={status} isLoading={isStatusLoading} isError={isStatusError} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <ConfigViewer config={config} isLoading={isConfigLoading} namespace={namespace} />
@@ -67,7 +67,11 @@ export function DashboardPage() {
               <CardDescription>Applied snapshot from this node</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 space-y-3">
-              {runtime?.config_sources.length ? (
+              {isRuntimeLoading ? (
+                <p className="text-sm text-muted-foreground">Loading runtime sources...</p>
+              ) : isRuntimeError ? (
+                <p className="text-sm text-muted-foreground">Runtime unavailable</p>
+              ) : runtime?.config_sources.length ? (
                 runtime.config_sources.map((source) => (
                   <div key={source.source} className="flex items-center justify-between gap-3 rounded-md border p-3">
                     <div className="min-w-0">
@@ -75,7 +79,7 @@ export function DashboardPage() {
                       <div className="truncate text-xs text-muted-foreground">{source.path || source.source}</div>
                     </div>
                     <Badge variant="outline">
-                      {source.route_count}/{source.upstream_pool_count}
+                      {source.route_count} routes / {source.upstream_pool_count} pools
                     </Badge>
                   </div>
                 ))

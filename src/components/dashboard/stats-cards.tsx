@@ -1,13 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Activity, CheckCircle, GitBranch, RadioTower, Route, Server } from "lucide-react"
+import { Activity, CheckCircle, GitBranch, RadioTower, Route } from "lucide-react"
 import type { StatusView } from "@/lib/api-types"
 
 interface StatsCardsProps {
   status: StatusView | undefined
   isLoading: boolean
+  isError?: boolean
 }
 
-export function StatsCards({ status, isLoading }: StatsCardsProps) {
+export function StatsCards({ status, isLoading, isError = false }: StatsCardsProps) {
+  const hasStatus = Boolean(status)
+  const fallbackDescription = isLoading ? "Loading status..." : isError || !hasStatus ? "Status unavailable" : undefined
   const runtime = status?.runtime
   const raft = status?.raft
   const vip = status?.vip
@@ -16,26 +19,26 @@ export function StatsCards({ status, isLoading }: StatsCardsProps) {
   const stats = [
     {
       title: "Routes",
-      value: isLoading ? "-" : runtime?.route_count ?? 0,
-      description: `${isLoading ? "-" : runtime?.upstream_pool_count ?? 0} upstream pools`,
+      value: fallbackDescription ? "-" : runtime?.route_count ?? 0,
+      description: fallbackDescription ?? `${runtime?.upstream_pool_count ?? 0} upstream pools`,
       icon: Route,
     },
     {
       title: "Targets",
-      value: isLoading ? "-" : runtime?.target_count ?? 0,
-      description: `${isLoading ? "-" : runtime?.healthy_target_count ?? 0} healthy / ${isLoading ? "-" : runtime?.unhealthy_target_count ?? 0} unhealthy`,
+      value: fallbackDescription ? "-" : runtime?.target_count ?? 0,
+      description: fallbackDescription ?? `${runtime?.healthy_target_count ?? 0} healthy / ${runtime?.unhealthy_target_count ?? 0} unhealthy`,
       icon: Activity,
     },
     {
       title: "Raft",
-      value: isLoading ? "-" : raft?.state ?? "unknown",
-      description: raft?.enabled ? raft.quorum_status : "disabled",
+      value: fallbackDescription ? "-" : raft?.state ?? "unknown",
+      description: fallbackDescription ?? (raft?.enabled ? raft.quorum_status : "disabled"),
       icon: GitBranch,
     },
     {
       title: "VIP",
-      value: isLoading ? "-" : vip?.enabled ? (vip.owned ? "owned" : "standby") : "disabled",
-      description: vip?.last_error || vip?.address || projection?.status || "no VIP configured",
+      value: fallbackDescription ? "-" : vip?.enabled ? (vip.owned ? "owned" : "standby") : "disabled",
+      description: fallbackDescription ?? (vip?.last_error || vip?.address || projection?.status || "no VIP configured"),
       icon: vip?.owned ? CheckCircle : RadioTower,
     },
   ]
