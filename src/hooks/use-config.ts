@@ -117,8 +117,11 @@ export function useDeleteNamespace() {
 
   return useMutation({
     mutationFn: deleteNamespace,
-    onSuccess: () => {
+    onSuccess: (_data, namespace) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.namespaces });
+      queryClient.invalidateQueries({ queryKey: queryKeys.config(namespace) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.status });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runtime });
     },
   });
 }
@@ -145,6 +148,7 @@ export function useJoinCluster() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.cluster });
       queryClient.invalidateQueries({ queryKey: queryKeys.status });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runtime });
     },
   });
 }
