@@ -19,8 +19,8 @@ export function ConfigViewer({ config, isLoading, namespace }: ConfigViewerProps
           Read-only desired state for the {namespace} namespace
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[400px] rounded-md border bg-muted/30">
+      <CardContent className="flex min-h-0 flex-1 flex-col">
+        <ScrollArea className="min-h-[400px] flex-1 rounded-md border bg-muted/30">
           <pre className="p-4 text-sm font-mono">
             {isLoading ? (
               <span className="text-muted-foreground">Loading configuration...</span>
