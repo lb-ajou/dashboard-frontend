@@ -1,85 +1,100 @@
 import type { ClusterView } from "@/lib/api-types"
 
-interface ClusterDisplayStateInput {
+export type DashboardClusterTone = "default" | "secondary" | "destructive" | "muted"
+
+export interface DashboardClusterMember {
+  id: string
+  address: string
+  role: string
+  isLeader: boolean
+}
+
+export interface DashboardClusterDisplayState {
+  status: {
+    label: string
+    tone: DashboardClusterTone
+  }
+  quorum: string
+  leader: string
+  localNode: string
+  memberCountLabel: string
+  members: DashboardClusterMember[]
+  message?: string
+}
+
+interface DashboardClusterDisplayStateInput {
   cluster: ClusterView | undefined
   isLoading: boolean
   isError: boolean
 }
 
-export interface ClusterDisplayState {
-  summary: {
-    enabled: string
-    mode: string
-    quorum: string
-    leader: string
-    localNode: string
-  }
-  membersMessage?: string
-  localMessage?: string
-  canJoin: boolean
-  joinDisabledReason?: string
-}
-
-export function getClusterDisplayState({
+export function getDashboardClusterDisplayState({
   cluster,
   isLoading,
   isError,
-}: ClusterDisplayStateInput): ClusterDisplayState {
+}: DashboardClusterDisplayStateInput): DashboardClusterDisplayState {
   if (isLoading) {
     return {
-      summary: {
-        enabled: "Loading...",
-        mode: "Loading...",
-        quorum: "Loading...",
-        leader: "Loading...",
-        localNode: "Loading...",
+      status: {
+        label: "Loading...",
+        tone: "muted",
       },
-      membersMessage: "Loading cluster members...",
-      localMessage: "Loading local node...",
-      canJoin: false,
-      joinDisabledReason: "Cluster state is still loading.",
+      quorum: "Loading...",
+      leader: "Loading...",
+      localNode: "Loading...",
+      memberCountLabel: "Loading...",
+      members: [],
+      message: "Loading cluster members...",
     }
   }
 
   if (isError || !cluster) {
     return {
-      summary: {
-        enabled: "Unavailable",
-        mode: "Unavailable",
-        quorum: "Unavailable",
-        leader: "Unavailable",
-        localNode: "Unavailable",
+      status: {
+        label: "Unavailable",
+        tone: "destructive",
       },
-      membersMessage: "Cluster state unavailable.",
-      localMessage: "Cluster state unavailable.",
-      canJoin: false,
-      joinDisabledReason: "Cluster state is unavailable.",
+      quorum: "Unavailable",
+      leader: "Unavailable",
+      localNode: "Unavailable",
+      memberCountLabel: "Unavailable",
+      members: [],
+      message: "Cluster state unavailable.",
     }
   }
 
+  const members = cluster.members.map((member) => ({
+    id: member.id,
+    address: member.address,
+    role: member.role,
+    isLeader: member.is_leader,
+  }))
+  const memberCountLabel = `${members.length} ${members.length === 1 ? "member" : "members"}`
+
   if (!cluster.enabled) {
     return {
-      summary: {
-        enabled: "no",
-        mode: "file",
-        quorum: cluster.quorum_status ?? "disabled",
-        leader: cluster.leader.id ?? "none",
-        localNode: cluster.local.id ?? "unknown",
+      status: {
+        label: "File mode",
+        tone: "secondary",
       },
-      membersMessage: "Raft is disabled in file mode.",
-      canJoin: false,
-      joinDisabledReason: "Raft is disabled in file mode.",
+      quorum: cluster.quorum_status ?? "disabled",
+      leader: cluster.leader.id ?? "none",
+      localNode: cluster.local.id ?? "unknown",
+      memberCountLabel,
+      members,
+      message: "Raft is disabled in file mode.",
     }
   }
 
   return {
-    summary: {
-      enabled: "yes",
-      mode: "raft",
-      quorum: cluster.quorum_status ?? "unknown",
-      leader: cluster.leader.id ?? "unknown",
-      localNode: cluster.local.id ?? "unknown",
+    status: {
+      label: "Raft",
+      tone: "default",
     },
-    canJoin: true,
+    quorum: cluster.quorum_status ?? "unknown",
+    leader: cluster.leader.id ?? "unknown",
+    localNode: cluster.local.id ?? "unknown",
+    memberCountLabel,
+    members,
   }
 }

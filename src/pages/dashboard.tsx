@@ -1,10 +1,13 @@
 import { Link } from "react-router";
-import { GitBranch, Plus, Route, Server } from "lucide-react";
+import { Plus, Route, Server } from "lucide-react";
 
-import { useConfig, useRuntime, useStatus } from "@/hooks/use-config";
+import { useCluster, useConfig, useRuntime, useStatus } from "@/hooks/use-config";
 import { namespacePath, useCurrentNamespace } from "@/hooks/use-namespace";
+import { formatApiError } from "@/lib/api-client";
+import { getDashboardClusterDisplayState } from "@/lib/cluster-display";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { ConfigViewer } from "@/components/dashboard/config-viewer";
+import { ClusterHealthCard } from "@/components/dashboard/cluster-health-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +17,13 @@ export function DashboardPage() {
   const { data: config, isLoading: isConfigLoading } = useConfig(namespace);
   const { data: status, isLoading: isStatusLoading, isError: isStatusError } = useStatus();
   const { data: runtime, isLoading: isRuntimeLoading, isError: isRuntimeError } = useRuntime();
+  const { data: cluster, isLoading: isClusterLoading, isError: isClusterError, error: clusterError } = useCluster();
+  const clusterDisplay = getDashboardClusterDisplayState({
+    cluster,
+    isLoading: isClusterLoading,
+    isError: isClusterError,
+  });
+  const clusterErrorMessage = isClusterError ? formatApiError(clusterError) : undefined;
 
   return (
     <div className="space-y-6">
@@ -51,15 +61,11 @@ export function DashboardPage() {
                     Create Upstream Pool
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="justify-start">
-                  <Link to={namespacePath(namespace, "cluster")}>
-                    <GitBranch className="mr-2 h-4 w-4" />
-                    Cluster Status
-                  </Link>
-                </Button>
               </div>
             </CardContent>
           </Card>
+
+          <ClusterHealthCard displayState={clusterDisplay} errorMessage={clusterErrorMessage} />
 
           <Card className="flex flex-col">
             <CardHeader>

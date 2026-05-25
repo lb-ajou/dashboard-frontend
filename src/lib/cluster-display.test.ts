@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import type { ClusterView } from "@/lib/api-types"
-import { getClusterDisplayState } from "@/lib/cluster-display"
+import { getDashboardClusterDisplayState } from "@/lib/cluster-display"
 
 function raftCluster(): ClusterView {
   return {
@@ -12,6 +12,7 @@ function raftCluster(): ClusterView {
       address: "127.0.0.1:7001",
       state: "leader",
       term: "3",
+      last_log_index: "42",
       commit_index: "42",
       applied_index: "42",
     },
@@ -27,63 +28,74 @@ function raftCluster(): ClusterView {
 }
 
 describe("cluster display state", () => {
-  test("distinguishes loading from reported cluster state", () => {
-    const state = getClusterDisplayState({ cluster: undefined, isLoading: true, isError: false })
+  test("prepares a compact loading state for the dashboard", () => {
+    const state = getDashboardClusterDisplayState({ cluster: undefined, isLoading: true, isError: false })
 
-    expect(state.summary).toEqual({
-      enabled: "Loading...",
-      mode: "Loading...",
-      quorum: "Loading...",
-      leader: "Loading...",
-      localNode: "Loading...",
+    expect(state.status).toEqual({
+      label: "Loading...",
+      tone: "muted",
     })
-    expect(state.membersMessage).toBe("Loading cluster members...")
-    expect(state.localMessage).toBe("Loading local node...")
-    expect(state.canJoin).toBe(false)
+    expect(state.quorum).toBe("Loading...")
+    expect(state.leader).toBe("Loading...")
+    expect(state.localNode).toBe("Loading...")
+    expect(state.memberCountLabel).toBe("Loading...")
+    expect(state.members).toEqual([])
+    expect(state.message).toBe("Loading cluster members...")
   })
 
-  test("distinguishes errors from disabled file mode", () => {
-    const state = getClusterDisplayState({ cluster: undefined, isLoading: false, isError: true })
+  test("prepares a compact unavailable state for the dashboard", () => {
+    const state = getDashboardClusterDisplayState({ cluster: undefined, isLoading: false, isError: true })
 
-    expect(state.summary).toEqual({
-      enabled: "Unavailable",
-      mode: "Unavailable",
-      quorum: "Unavailable",
-      leader: "Unavailable",
-      localNode: "Unavailable",
+    expect(state.status).toEqual({
+      label: "Unavailable",
+      tone: "destructive",
     })
-    expect(state.membersMessage).toBe("Cluster state unavailable.")
-    expect(state.localMessage).toBe("Cluster state unavailable.")
-    expect(state.canJoin).toBe(false)
+    expect(state.quorum).toBe("Unavailable")
+    expect(state.leader).toBe("Unavailable")
+    expect(state.localNode).toBe("Unavailable")
+    expect(state.memberCountLabel).toBe("Unavailable")
+    expect(state.members).toEqual([])
+    expect(state.message).toBe("Cluster state unavailable.")
   })
 
   test("shows disabled file mode without implying a loading or error state", () => {
-    const state = getClusterDisplayState({
-      cluster: { ...raftCluster(), enabled: false, quorum_status: "disabled", members: [] },
+    const state = getDashboardClusterDisplayState({
+      cluster: { ...raftCluster(), enabled: false, quorum_status: "disabled", leader: {}, members: [] },
       isLoading: false,
       isError: false,
     })
 
-    expect(state.summary.enabled).toBe("no")
-    expect(state.summary.mode).toBe("file")
-    expect(state.summary.quorum).toBe("disabled")
-    expect(state.membersMessage).toBe("Raft is disabled in file mode.")
-    expect(state.canJoin).toBe(false)
-    expect(state.joinDisabledReason).toBe("Raft is disabled in file mode.")
+    expect(state.status).toEqual({
+      label: "File mode",
+      tone: "secondary",
+    })
+    expect(state.quorum).toBe("disabled")
+    expect(state.leader).toBe("none")
+    expect(state.localNode).toBe("node-1")
+    expect(state.memberCountLabel).toBe("0 members")
+    expect(state.members).toEqual([])
+    expect(state.message).toBe("Raft is disabled in file mode.")
   })
 
-  test("allows joining only when raft cluster state is available", () => {
-    const state = getClusterDisplayState({ cluster: raftCluster(), isLoading: false, isError: false })
+  test("shows only operational raft details for the dashboard", () => {
+    const state = getDashboardClusterDisplayState({ cluster: raftCluster(), isLoading: false, isError: false })
 
-    expect(state.summary).toEqual({
-      enabled: "yes",
-      mode: "raft",
-      quorum: "available",
-      leader: "node-1",
-      localNode: "node-1",
+    expect(state.status).toEqual({
+      label: "Raft",
+      tone: "default",
     })
-    expect(state.membersMessage).toBeUndefined()
-    expect(state.localMessage).toBeUndefined()
-    expect(state.canJoin).toBe(true)
+    expect(state.quorum).toBe("available")
+    expect(state.leader).toBe("node-1")
+    expect(state.localNode).toBe("node-1")
+    expect(state.memberCountLabel).toBe("1 member")
+    expect(state.members).toEqual([
+      {
+        id: "node-1",
+        address: "127.0.0.1:7001",
+        role: "voter",
+        isLeader: true,
+      },
+    ])
+    expect(state.message).toBeUndefined()
   })
 })

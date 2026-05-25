@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
-  ClusterJoinRequest,
   ClusterView,
   NamespaceConfigPutRequest,
   NamespaceConfigView,
@@ -9,7 +8,7 @@ import type {
   RuntimeView,
   StatusView,
 } from "@/lib/api-types";
-import { apiDelete, apiGet, apiPost, apiPostNoContent, apiPut } from "@/lib/api-client";
+import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/api-client";
 
 export const queryKeys = {
   status: ["status"] as const,
@@ -57,10 +56,6 @@ async function fetchNamespaceConfig(namespace: string) {
 
 async function saveNamespaceConfig(namespace: string, request: NamespaceConfigPutRequest) {
   return apiPut<NamespaceConfigView>(namespaceConfigPath(namespace), request, "Failed to save namespace config");
-}
-
-async function joinCluster(request: ClusterJoinRequest) {
-  return apiPostNoContent("/cluster/join", request, "Failed to join cluster");
 }
 
 export function useStatus() {
@@ -138,19 +133,6 @@ export function useSaveConfig(namespace: string) {
         queryClient.invalidateQueries({ queryKey: queryKeys.status }),
         queryClient.invalidateQueries({ queryKey: queryKeys.runtime }),
       ]);
-    },
-  });
-}
-
-export function useJoinCluster() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: joinCluster,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cluster });
-      queryClient.invalidateQueries({ queryKey: queryKeys.status });
-      queryClient.invalidateQueries({ queryKey: queryKeys.runtime });
     },
   });
 }

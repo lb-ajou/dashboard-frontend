@@ -215,11 +215,6 @@ export interface NamespaceListView {
   default_namespace: string;
 }
 
-export interface ClusterJoinRequest {
-  node_id: string;
-  raft_address: string;
-}
-
 export interface ValidationError {
   field: string;
   message: string;

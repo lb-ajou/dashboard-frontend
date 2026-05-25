@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation, useNavigate } from "react-router"
-import { ChevronDown, GitBranch, LayoutDashboard, Route, Server } from "lucide-react"
+import { ChevronDown, LayoutDashboard, Route, Server } from "lucide-react"
 
 import {
   Sidebar,
@@ -42,11 +42,6 @@ const mainNavItems = [
     subpath: "upstreams",
     icon: Server,
   },
-  {
-    title: "Cluster",
-    subpath: "cluster",
-    icon: GitBranch,
-  },
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -59,9 +54,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const currentSubpath = location.pathname.startsWith(namespaceBasePath)
     ? location.pathname.slice(namespaceBasePath.length).replace(/^\/+/, "")
     : ""
+  const activeSubpath = mainNavItems.some((item) => item.subpath === currentSubpath) ? currentSubpath : ""
 
   const handleNamespaceChange = (namespace: string) => {
-    navigate(namespacePath(namespace, currentSubpath))
+    navigate(namespacePath(namespace, activeSubpath))
   }
 
   const handleCreateNamespace = () => {
@@ -79,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     createNamespace.mutate(trimmedNamespace, {
       onSuccess: (createdNamespace) => {
-        navigate(namespacePath(createdNamespace.namespace, currentSubpath))
+        navigate(namespacePath(createdNamespace.namespace, activeSubpath))
       },
       onError: (error) => {
         window.alert(formatApiError(error))

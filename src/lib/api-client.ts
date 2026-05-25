@@ -104,18 +104,6 @@ export function apiPost<T>(path: string, body: unknown, fallbackMessage?: string
   );
 }
 
-export function apiPostNoContent(path: string, body: unknown, fallbackMessage?: string) {
-  return apiFetch<void>(
-    path,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    },
-    fallbackMessage,
-  );
-}
-
 export function apiDelete(path: string, fallbackMessage?: string) {
   return apiFetch<void>(path, { method: "DELETE" }, fallbackMessage);
 }
