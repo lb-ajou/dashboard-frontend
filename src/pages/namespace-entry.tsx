@@ -4,6 +4,7 @@ import { useCreateNamespace, useNamespaces } from "@/hooks/use-config";
 import { namespacePath } from "@/hooks/use-namespace";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatApiError } from "@/lib/api-client";
 import { INVALID_NAMESPACE_MESSAGE, isValidNamespaceName } from "@/lib/namespaces";
 
 interface NamespaceEntryPageProps {
@@ -39,7 +40,7 @@ export function NamespaceEntryPage({ subpath }: NamespaceEntryPageProps) {
         navigate(namespacePath(createdNamespace.namespace, subpath), { replace: true });
       },
       onError: (createError) => {
-        window.alert(createError.message);
+        window.alert(formatApiError(createError));
       },
     });
   };

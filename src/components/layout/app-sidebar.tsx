@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useCreateNamespace, useNamespaces } from "@/hooks/use-config"
 import { namespacePath, useCurrentNamespace } from "@/hooks/use-namespace"
+import { formatApiError } from "@/lib/api-client"
 import { INVALID_NAMESPACE_MESSAGE, isValidNamespaceName } from "@/lib/namespaces"
 
 const mainNavItems = [
@@ -81,7 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         navigate(namespacePath(createdNamespace.namespace, currentSubpath))
       },
       onError: (error) => {
-        window.alert(error.message)
+        window.alert(formatApiError(error))
       },
     })
   }
