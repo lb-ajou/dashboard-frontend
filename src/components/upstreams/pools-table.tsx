@@ -42,9 +42,10 @@ interface PoolsTableProps {
   pools: PoolWithId[]
   onEdit: (id: string, pool: UpstreamPool) => void
   onDelete: (id: string) => void
+  disabled?: boolean
 }
 
-export function PoolsTable({ pools, onEdit, onDelete }: PoolsTableProps) {
+export function PoolsTable({ pools, onEdit, onDelete, disabled = false }: PoolsTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -119,13 +120,13 @@ export function PoolsTable({ pools, onEdit, onDelete }: PoolsTableProps) {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
+              <Button variant="ghost" className="h-8 w-8 p-0" disabled={disabled}>
                 <span className="sr-only">Open menu</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(id, pool)}>
+              <DropdownMenuItem onClick={() => onEdit(id, pool)} disabled={disabled}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
@@ -133,6 +134,7 @@ export function PoolsTable({ pools, onEdit, onDelete }: PoolsTableProps) {
               <DropdownMenuItem
                 onClick={() => onDelete(id)}
                 className="text-destructive"
+                disabled={disabled}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete

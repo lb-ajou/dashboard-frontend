@@ -86,7 +86,7 @@ export function PoolForm({
                 <Input
                   placeholder="e.g., pool-api"
                   {...field}
-                  disabled={!!poolId}
+                  disabled={!!poolId || isSubmitting}
                 />
               </FormControl>
               <FormDescription>
@@ -114,6 +114,7 @@ export function PoolForm({
                       <Input
                         placeholder="e.g., 10.0.0.11:8080"
                         {...field}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     {upstreams.length > 1 && (
@@ -122,6 +123,7 @@ export function PoolForm({
                         variant="ghost"
                         size="icon"
                         onClick={() => removeUpstream(index)}
+                        disabled={isSubmitting}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -138,6 +140,7 @@ export function PoolForm({
             size="sm"
             onClick={addUpstream}
             className="mt-2"
+            disabled={isSubmitting}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Upstream
@@ -161,6 +164,7 @@ export function PoolForm({
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
+                  disabled={isSubmitting}
                 />
               </FormControl>
             </FormItem>
@@ -176,7 +180,7 @@ export function PoolForm({
                 <FormItem>
                   <FormLabel>Health Check Path</FormLabel>
                   <FormControl>
-                    <Input placeholder="/health" {...field} />
+                    <Input placeholder="/health" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormDescription>
                     HTTP path for health check requests
@@ -194,7 +198,7 @@ export function PoolForm({
                   <FormItem>
                     <FormLabel>Interval</FormLabel>
                     <FormControl>
-                      <Input placeholder="30s" {...field} />
+                      <Input placeholder="30s" {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormDescription>
                       Time between checks (e.g., 30s, 1m)
@@ -211,7 +215,7 @@ export function PoolForm({
                   <FormItem>
                     <FormLabel>Timeout</FormLabel>
                     <FormControl>
-                      <Input placeholder="3s" {...field} />
+                      <Input placeholder="3s" {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormDescription>
                       Request timeout (e.g., 3s, 500ms)
@@ -235,6 +239,7 @@ export function PoolForm({
                       max={599}
                       placeholder="200"
                       {...field}
+                      disabled={isSubmitting}
                       onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 200)}
                     />
                   </FormControl>
@@ -249,7 +254,7 @@ export function PoolForm({
         )}
 
         <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>

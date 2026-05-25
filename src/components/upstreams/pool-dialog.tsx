@@ -31,8 +31,16 @@ export function PoolDialog({
     onSubmit(id, poolData)
   }
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (isSubmitting) {
+      return
+    }
+
+    onOpenChange(nextOpen)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
@@ -45,10 +53,11 @@ export function PoolDialog({
           </DialogDescription>
         </DialogHeader>
         <PoolForm
+          key={`${poolId ? "edit" : "create"}-${poolId ?? "new"}`}
           poolId={poolId}
           pool={pool}
           onSubmit={handleSubmit}
-          onCancel={() => onOpenChange(false)}
+          onCancel={() => handleOpenChange(false)}
           isSubmitting={isSubmitting}
         />
       </DialogContent>
