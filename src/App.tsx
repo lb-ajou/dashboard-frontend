@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Layout } from "@/components/layout/layout"
 import { DashboardPage } from "@/pages/dashboard"
+import { ClusterPage } from "@/pages/cluster"
 import { RoutesPage } from "@/pages/routes"
 import { UpstreamsPage } from "@/pages/upstreams"
 import { NamespaceEntryPage } from "@/pages/namespace-entry"
@@ -36,6 +37,7 @@ export function App() {
               <Route path="/upstreams" element={<NamespaceEntryPage subpath="upstreams" />} />
               <Route path="/namespaces/:namespace" element={<Layout />}>
                 <Route index element={<DashboardPage />} />
+                <Route path="cluster" element={<ClusterPage />} />
                 <Route path="routes" element={<RoutesPage />} />
                 <Route path="upstreams" element={<UpstreamsPage />} />
               </Route>

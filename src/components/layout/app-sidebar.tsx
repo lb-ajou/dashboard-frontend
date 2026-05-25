@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Link, useLocation, useNavigate } from "react-router"
-import { LayoutDashboard, Route, Server, ChevronDown } from "lucide-react"
+import { ChevronDown, GitBranch, LayoutDashboard, Route, Server } from "lucide-react"
 
 import {
   Sidebar,
@@ -40,6 +40,11 @@ const mainNavItems = [
     title: "Upstream Pools",
     subpath: "upstreams",
     icon: Server,
+  },
+  {
+    title: "Cluster",
+    subpath: "cluster",
+    icon: GitBranch,
   },
 ]
 
