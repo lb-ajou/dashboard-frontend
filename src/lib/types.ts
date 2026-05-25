@@ -10,9 +10,21 @@ import type {
   UpstreamPoolConfig,
 } from "@/lib/api-types";
 
-export type Config = NamespaceConfigView;
-export type NamespaceSummary = NamespaceView;
-export type NamespaceCreateResponse = NamespaceView;
+export type Config = Omit<NamespaceConfigView, "namespace" | "exists"> & {
+  namespace?: string;
+  exists?: boolean;
+};
+
+export type NamespaceSummary = Omit<
+  NamespaceView,
+  "exists" | "route_count" | "upstream_pool_count"
+> & {
+  exists?: boolean;
+  route_count?: number;
+  upstream_pool_count?: number;
+};
+
+export type NamespaceCreateResponse = NamespaceSummary;
 
 export interface NamespaceListResponse {
   items: NamespaceSummary[];
