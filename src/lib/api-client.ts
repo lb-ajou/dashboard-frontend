@@ -24,8 +24,21 @@ export class ApiError extends Error {
 }
 
 async function readErrorPayload(response: Response, fallbackMessage: string): Promise<APIErrorResponse> {
+  let text: string;
+
   try {
-    const payload = (await response.json()) as APIErrorResponse;
+    text = await response.text();
+  } catch {
+    return { message: fallbackMessage };
+  }
+
+  const message = text.trim();
+  if (!message) {
+    return { message: fallbackMessage };
+  }
+
+  try {
+    const payload = JSON.parse(text) as APIErrorResponse;
     return {
       message: payload.message || fallbackMessage,
       code: payload.code,
@@ -33,12 +46,14 @@ async function readErrorPayload(response: Response, fallbackMessage: string): Pr
       errors: payload.errors,
     };
   } catch {
-    return { message: fallbackMessage };
+    return { message };
   }
 }
 
 export function apiPath(path: string) {
-  return `${API_BASE_URL}${path}`;
+  const baseUrl = API_BASE_URL.replace(/\/+$/, "");
+  const normalizedPath = path ? `/${path.replace(/^\/+/, "")}` : "";
+  return `${baseUrl}${normalizedPath}`;
 }
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}, fallbackMessage = "API request failed"): Promise<T> {
@@ -49,11 +64,16 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, fallback
     throw new ApiError(response.status, payload, fallbackMessage);
   }
 
-  if (response.status === 204) {
+  if (response.status === 204 || response.status === 205) {
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  if (!text.trim()) {
+    return undefined as T;
+  }
+
+  return JSON.parse(text) as T;
 }
 
 export function apiGet<T>(path: string, fallbackMessage?: string) {
