@@ -12,6 +12,7 @@ import type { Route } from "@/lib/types"
 
 interface RouteDialogProps {
   route: Route | null
+  isEditing?: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
   upstreamPoolIds: string[]
@@ -21,6 +22,7 @@ interface RouteDialogProps {
 
 export function RouteDialog({
   route,
+  isEditing = false,
   open,
   onOpenChange,
   upstreamPoolIds,
@@ -36,16 +38,18 @@ export function RouteDialog({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
-            {route ? "Edit Route" : "Create Route"}
+            {isEditing ? "Edit Route" : "Create Route"}
           </DialogTitle>
           <DialogDescription>
-            {route
+            {isEditing
               ? "Update the route configuration"
               : "Add a new route to your reverse proxy"}
           </DialogDescription>
         </DialogHeader>
         <RouteForm
+          key={`${isEditing ? "edit" : "create"}-${route?.id ?? "new"}`}
           route={route}
+          isEditing={isEditing}
           upstreamPoolIds={upstreamPoolIds}
           onSubmit={handleSubmit}
           onCancel={() => onOpenChange(false)}

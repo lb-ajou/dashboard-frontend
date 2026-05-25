@@ -28,6 +28,7 @@ import { routeFormSchema, type RouteFormValues } from "@/lib/validation"
 
 interface RouteFormProps {
   route?: Route | null
+  isEditing?: boolean
   upstreamPoolIds: string[]
   onSubmit: (route: Route) => void
   onCancel: () => void
@@ -38,6 +39,7 @@ const NO_PATH_MATCH_VALUE = "__no_path_match__"
 
 export function RouteForm({
   route,
+  isEditing = false,
   upstreamPoolIds,
   onSubmit,
   onCancel,
@@ -93,7 +95,7 @@ export function RouteForm({
                 <Input
                   placeholder="e.g., r-api"
                   {...field}
-                  disabled={!!route}
+                  disabled={isEditing}
                 />
               </FormControl>
               <FormDescription>
@@ -287,7 +289,7 @@ export function RouteForm({
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : route ? "Update Route" : "Create Route"}
+            {isSubmitting ? "Saving..." : isEditing ? "Update Route" : "Create Route"}
           </Button>
         </div>
       </form>

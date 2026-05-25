@@ -38,9 +38,10 @@ interface RoutesTableProps {
   onEdit: (route: Route) => void
   onDelete: (route: Route) => void
   onDuplicate: (route: Route) => void
+  disabled?: boolean
 }
 
-export function RoutesTable({ routes, onEdit, onDelete, onDuplicate }: RoutesTableProps) {
+export function RoutesTable({ routes, onEdit, onDelete, onDuplicate, disabled = false }: RoutesTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -137,17 +138,17 @@ export function RoutesTable({ routes, onEdit, onDelete, onDuplicate }: RoutesTab
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
+              <Button variant="ghost" className="h-8 w-8 p-0" disabled={disabled}>
                 <span className="sr-only">Open menu</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(route)}>
+              <DropdownMenuItem onClick={() => onEdit(route)} disabled={disabled}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDuplicate(route)}>
+              <DropdownMenuItem onClick={() => onDuplicate(route)} disabled={disabled}>
                 <Copy className="mr-2 h-4 w-4" />
                 Duplicate
               </DropdownMenuItem>
@@ -155,6 +156,7 @@ export function RoutesTable({ routes, onEdit, onDelete, onDuplicate }: RoutesTab
               <DropdownMenuItem
                 onClick={() => onDelete(route)}
                 className="text-destructive"
+                disabled={disabled}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
