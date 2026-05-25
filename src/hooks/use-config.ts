@@ -1,210 +1,92 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Config, NamespaceCreateResponse, NamespaceListResponse, Route, UpstreamPool } from "@/lib/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  ClusterJoinRequest,
+  ClusterView,
+  NamespaceConfigPutRequest,
+  NamespaceConfigView,
+  NamespaceListView,
+  NamespaceView,
+  RuntimeView,
+  StatusView,
+} from "@/lib/api-types";
+import { apiDelete, apiGet, apiPost, apiPostNoContent, apiPut } from "@/lib/api-client";
 
-// Bun only inlines literal process.env references that are present at build time.
-// Guard access so the browser still works when the public env is unset.
-const API_BASE_URL =
-  typeof process !== "undefined" && process.env.BUN_PUBLIC_API_BASE_URL ? process.env.BUN_PUBLIC_API_BASE_URL : "/api";
-
-interface NamespaceSummaryApi {
-  namespace: string;
-  path: string;
-  exists?: boolean;
-  route_count?: number;
-  upstream_pool_count?: number;
-}
-
-interface NamespaceListApiResponse {
-  items: NamespaceSummaryApi[];
-}
-
-interface ApiErrorPayload {
-  message?: string;
-}
-
-function namespaceBasePath(namespace: string) {
-  return `${API_BASE_URL}/namespaces/${encodeURIComponent(namespace)}`;
-}
-
-async function readApiError(response: Response, fallbackMessage: string) {
-  try {
-    const error = (await response.json()) as ApiErrorPayload;
-    return error.message || fallbackMessage;
-  } catch {
-    return fallbackMessage;
-  }
-}
-
-function normalizeNamespaceSummary(summary: NamespaceSummaryApi): NamespaceCreateResponse {
-  return {
-    namespace: summary.namespace,
-    path: summary.path,
-    exists: summary.exists,
-    route_count: summary.route_count,
-    upstream_pool_count: summary.upstream_pool_count,
-  };
-}
-
-function normalizeNamespaceListResponse(data: NamespaceListApiResponse): NamespaceListResponse {
-  return {
-    items: data.items.map(normalizeNamespaceSummary),
-  };
-}
-
-// Fetch full config
-async function fetchConfig(namespace: string): Promise<Config> {
-  const response = await fetch(`${namespaceBasePath(namespace)}/config`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch config");
-  }
-  return response.json();
-}
-
-// Fetch routes
-async function fetchRoutes(namespace: string): Promise<Route[]> {
-  const response = await fetch(`${namespaceBasePath(namespace)}/routes`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch routes");
-  }
-  return response.json();
-}
-
-// Create route
-async function createRoute(namespace: string, route: Route): Promise<Route> {
-  const response = await fetch(`${namespaceBasePath(namespace)}/routes`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(route),
-  });
-  if (!response.ok) {
-    throw new Error(await readApiError(response, "Failed to create route"));
-  }
-  return response.json();
-}
-
-// Update route
-async function updateRoute(namespace: string, id: string, route: Route): Promise<Route> {
-  const response = await fetch(`${namespaceBasePath(namespace)}/routes/${encodeURIComponent(id)}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(route),
-  });
-  if (!response.ok) {
-    throw new Error(await readApiError(response, "Failed to update route"));
-  }
-  return response.json();
-}
-
-// Delete route
-async function deleteRoute(namespace: string, id: string): Promise<void> {
-  const response = await fetch(`${namespaceBasePath(namespace)}/routes/${encodeURIComponent(id)}`, {
-    method: "DELETE",
-  });
-  if (!response.ok) {
-    throw new Error(await readApiError(response, "Failed to delete route"));
-  }
-}
-
-// Fetch upstream pools
-async function fetchUpstreamPools(namespace: string): Promise<Record<string, UpstreamPool>> {
-  const response = await fetch(`${namespaceBasePath(namespace)}/upstream-pools`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch upstream pools");
-  }
-  return response.json();
-}
-
-// Create upstream pool
-async function createUpstreamPool(
-  namespace: string,
-  id: string,
-  pool: UpstreamPool,
-): Promise<{ id: string; pool: UpstreamPool }> {
-  const response = await fetch(`${namespaceBasePath(namespace)}/upstream-pools`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id, ...pool }),
-  });
-  if (!response.ok) {
-    throw new Error(await readApiError(response, "Failed to create upstream pool"));
-  }
-  return response.json();
-}
-
-// Update upstream pool
-async function updateUpstreamPool(namespace: string, id: string, pool: UpstreamPool): Promise<UpstreamPool> {
-  const response = await fetch(`${namespaceBasePath(namespace)}/upstream-pools/${encodeURIComponent(id)}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(pool),
-  });
-  if (!response.ok) {
-    throw new Error(await readApiError(response, "Failed to update upstream pool"));
-  }
-  return response.json();
-}
-
-// Delete upstream pool
-async function deleteUpstreamPool(namespace: string, id: string): Promise<void> {
-  const response = await fetch(`${namespaceBasePath(namespace)}/upstream-pools/${encodeURIComponent(id)}`, {
-    method: "DELETE",
-  });
-  if (!response.ok) {
-    throw new Error(await readApiError(response, "Failed to delete upstream pool"));
-  }
-}
-
-// Fetch available namespaces
-async function fetchNamespaces(): Promise<NamespaceListResponse> {
-  const response = await fetch(`${API_BASE_URL}/namespaces`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch namespaces");
-  }
-  const data = (await response.json()) as NamespaceListApiResponse;
-  return normalizeNamespaceListResponse(data);
-}
-
-async function createNamespace(namespace: string): Promise<NamespaceCreateResponse> {
-  const response = await fetch(`${API_BASE_URL}/namespaces`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ namespace }),
-  });
-  if (!response.ok) {
-    throw new Error(await readApiError(response, "Failed to create namespace"));
-  }
-  const data = (await response.json()) as NamespaceSummaryApi;
-  return normalizeNamespaceSummary(data);
-}
-
-async function deleteNamespace(namespace: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/namespaces/${encodeURIComponent(namespace)}`, {
-    method: "DELETE",
-  });
-  if (!response.ok) {
-    throw new Error(await readApiError(response, "Failed to delete namespace"));
-  }
-}
-
-// Query keys
-const queryKeys = {
+export const queryKeys = {
+  status: ["status"] as const,
+  runtime: ["runtime"] as const,
+  cluster: ["cluster"] as const,
   namespaces: ["namespaces"] as const,
   config: (namespace: string) => ["config", namespace] as const,
-  routes: (namespace: string) => ["routes", namespace] as const,
-  upstreamPools: (namespace: string) => ["upstreamPools", namespace] as const,
 };
 
-// Hooks
+function namespaceConfigPath(namespace: string) {
+  return `/namespaces/${encodeURIComponent(namespace)}/config`;
+}
+
+function namespacePath(namespace: string) {
+  return `/namespaces/${encodeURIComponent(namespace)}`;
+}
+
+async function fetchStatus() {
+  return apiGet<StatusView>("/status", "Failed to fetch node status");
+}
+
+async function fetchRuntime() {
+  return apiGet<RuntimeView>("/runtime", "Failed to fetch runtime snapshot");
+}
+
+async function fetchCluster() {
+  return apiGet<ClusterView>("/cluster", "Failed to fetch cluster state");
+}
+
+async function fetchNamespaces() {
+  return apiGet<NamespaceListView>("/namespaces", "Failed to fetch namespaces");
+}
+
+async function createNamespace(namespace: string) {
+  return apiPost<NamespaceView>("/namespaces", { namespace }, "Failed to create namespace");
+}
+
+async function deleteNamespace(namespace: string) {
+  return apiDelete(namespacePath(namespace), "Failed to delete namespace");
+}
+
+async function fetchNamespaceConfig(namespace: string) {
+  return apiGet<NamespaceConfigView>(namespaceConfigPath(namespace), "Failed to fetch namespace config");
+}
+
+async function saveNamespaceConfig(namespace: string, request: NamespaceConfigPutRequest) {
+  return apiPut<NamespaceConfigView>(namespaceConfigPath(namespace), request, "Failed to save namespace config");
+}
+
+async function joinCluster(request: ClusterJoinRequest) {
+  return apiPostNoContent("/cluster/join", request, "Failed to join cluster");
+}
+
+export function useStatus() {
+  return useQuery({
+    queryKey: queryKeys.status,
+    queryFn: fetchStatus,
+    refetchInterval: 5000,
+  });
+}
+
+export function useRuntime() {
+  return useQuery({
+    queryKey: queryKeys.runtime,
+    queryFn: fetchRuntime,
+    refetchInterval: 5000,
+  });
+}
+
+export function useCluster() {
+  return useQuery({
+    queryKey: queryKeys.cluster,
+    queryFn: fetchCluster,
+    refetchInterval: 5000,
+  });
+}
+
 export function useNamespaces() {
   return useQuery({
     queryKey: queryKeys.namespaces,
@@ -215,12 +97,13 @@ export function useNamespaces() {
 export function useConfig(namespace: string) {
   return useQuery({
     queryKey: queryKeys.config(namespace),
-    queryFn: () => fetchConfig(namespace),
+    queryFn: () => fetchNamespaceConfig(namespace),
   });
 }
 
 export function useCreateNamespace() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: createNamespace,
     onSuccess: () => {
@@ -231,6 +114,7 @@ export function useCreateNamespace() {
 
 export function useDeleteNamespace() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: deleteNamespace,
     onSuccess: () => {
@@ -239,86 +123,28 @@ export function useDeleteNamespace() {
   });
 }
 
-export function useRoutes(namespace: string) {
-  return useQuery({
-    queryKey: queryKeys.routes(namespace),
-    queryFn: () => fetchRoutes(namespace),
-  });
-}
-
-export function useCreateRoute(namespace: string) {
+export function useSaveConfig(namespace: string) {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (route: Route) => createRoute(namespace, route),
+    mutationFn: (request: NamespaceConfigPutRequest) => saveNamespaceConfig(namespace, request),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.routes(namespace) });
       queryClient.invalidateQueries({ queryKey: queryKeys.config(namespace) });
       queryClient.invalidateQueries({ queryKey: queryKeys.namespaces });
+      queryClient.invalidateQueries({ queryKey: queryKeys.status });
+      queryClient.invalidateQueries({ queryKey: queryKeys.runtime });
     },
   });
 }
 
-export function useUpdateRoute(namespace: string) {
+export function useJoinCluster() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, route }: { id: string; route: Route }) => updateRoute(namespace, id, route),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.routes(namespace) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.config(namespace) });
-    },
-  });
-}
 
-export function useDeleteRoute(namespace: string) {
-  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => deleteRoute(namespace, id),
+    mutationFn: joinCluster,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.routes(namespace) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.config(namespace) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.namespaces });
-    },
-  });
-}
-
-export function useUpstreamPools(namespace: string) {
-  return useQuery({
-    queryKey: queryKeys.upstreamPools(namespace),
-    queryFn: () => fetchUpstreamPools(namespace),
-  });
-}
-
-export function useCreateUpstreamPool(namespace: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, pool }: { id: string; pool: UpstreamPool }) => createUpstreamPool(namespace, id, pool),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.upstreamPools(namespace) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.config(namespace) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.namespaces });
-    },
-  });
-}
-
-export function useUpdateUpstreamPool(namespace: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, pool }: { id: string; pool: UpstreamPool }) => updateUpstreamPool(namespace, id, pool),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.upstreamPools(namespace) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.config(namespace) });
-    },
-  });
-}
-
-export function useDeleteUpstreamPool(namespace: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => deleteUpstreamPool(namespace, id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.upstreamPools(namespace) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.config(namespace) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.namespaces });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cluster });
+      queryClient.invalidateQueries({ queryKey: queryKeys.status });
     },
   });
 }
