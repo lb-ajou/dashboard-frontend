@@ -1,8 +1,10 @@
 import * as React from "react";
 import { Plus } from "lucide-react";
 
-import { useRoutes, useCreateRoute, useUpdateRoute, useDeleteRoute, useUpstreamPools } from "@/hooks/use-config";
+import { useConfig, useSaveConfig } from "@/hooks/use-config";
 import { useCurrentNamespace } from "@/hooks/use-namespace";
+import { addRouteToConfig, deleteRouteFromConfig, toPutRequest, upsertRouteInConfig } from "@/lib/config-mutations";
+import { formatApiError } from "@/lib/api-client";
 import type { Route } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { RoutesTable } from "@/components/routes/routes-table";
@@ -10,16 +12,28 @@ import { RouteDialog } from "@/components/routes/route-dialog";
 
 export function RoutesPage() {
   const namespace = useCurrentNamespace();
-  const { data: routes = [], isLoading } = useRoutes(namespace);
-  const { data: pools = {} } = useUpstreamPools(namespace);
-  const createRoute = useCreateRoute(namespace);
-  const updateRoute = useUpdateRoute(namespace);
-  const deleteRoute = useDeleteRoute(namespace);
+  const { data: config, isLoading } = useConfig(namespace);
+  const saveConfig = useSaveConfig(namespace);
 
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editingRoute, setEditingRoute] = React.useState<Route | null>(null);
 
-  const upstreamPoolIds = Object.keys(pools);
+  const routes = config?.routes ?? [];
+  const upstreamPoolIds = Object.keys(config?.upstream_pools ?? {});
+
+  function saveNextConfig(nextConfig: typeof config, onSuccess: () => void) {
+    if (!nextConfig) {
+      window.alert("Namespace config is not loaded yet.");
+      return;
+    }
+
+    saveConfig.mutate(toPutRequest(nextConfig), {
+      onSuccess,
+      onError: (error) => {
+        window.alert(formatApiError(error));
+      },
+    });
+  }
 
   const handleCreate = () => {
     setEditingRoute(null);
@@ -41,41 +55,35 @@ export function RoutesPage() {
   };
 
   const handleDelete = (route: Route) => {
+    if (!config) {
+      window.alert("Namespace config is not loaded yet.");
+      return;
+    }
+
     if (confirm(`Are you sure you want to delete route "${route.id}"?`)) {
-      deleteRoute.mutate(route.id);
+      saveNextConfig(deleteRouteFromConfig(config, route.id), () => {
+        setEditingRoute(null);
+      });
     }
   };
 
   const handleSubmit = (routeData: Route) => {
-    if (editingRoute && editingRoute.id !== routeData.id) {
-      // Updating existing route with potentially changed ID
-      updateRoute.mutate(
-        { id: editingRoute.id, route: routeData },
-        {
-          onSuccess: () => {
-            setDialogOpen(false);
-            setEditingRoute(null);
-          },
-        },
-      );
-    } else if (editingRoute) {
-      // Updating existing route
-      updateRoute.mutate(
-        { id: editingRoute.id, route: routeData },
-        {
-          onSuccess: () => {
-            setDialogOpen(false);
-            setEditingRoute(null);
-          },
-        },
-      );
-    } else {
-      // Creating new route
-      createRoute.mutate(routeData, {
-        onSuccess: () => {
-          setDialogOpen(false);
-        },
+    if (!config) {
+      window.alert("Namespace config is not loaded yet.");
+      return;
+    }
+
+    try {
+      const nextConfig = editingRoute
+        ? upsertRouteInConfig(config, editingRoute.id, routeData)
+        : addRouteToConfig(config, routeData);
+
+      saveNextConfig(nextConfig, () => {
+        setDialogOpen(false);
+        setEditingRoute(null);
       });
+    } catch (error) {
+      window.alert(formatApiError(error));
     }
   };
 
@@ -116,7 +124,7 @@ export function RoutesPage() {
         }}
         upstreamPoolIds={upstreamPoolIds}
         onSubmit={handleSubmit}
-        isSubmitting={createRoute.isPending || updateRoute.isPending}
+        isSubmitting={saveConfig.isPending}
       />
     </div>
   );

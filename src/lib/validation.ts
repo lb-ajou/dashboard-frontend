@@ -6,19 +6,22 @@ const durationRegex = /^\d+(ms|s|m|h)$/
 // Host:port regex for upstream addresses
 const hostPortRegex = /^(\[([0-9a-fA-F:]+)\]|([^:[\]]+)):(\d+)$/
 
+const routeAlgorithms = ["round_robin", "sticky_cookie", "5_tuple_hash", "least_connection"] as const
+
 // Form validation schemas
 export const routeFormSchema = z.object({
   id: z.string().min(1, 'Route ID is required'),
   enabled: z.boolean(),
   hosts: z.array(z.string().min(1, 'Host cannot be empty'))
     .min(1, 'At least one host is required'),
-  pathType: z.string().optional(), // Can be 'exact', 'prefix', 'regex', or empty
+  pathType: z.enum(["exact", "prefix", "regex", ""]).optional(),
   pathValue: z.string().optional(),
+  algorithm: z.enum(routeAlgorithms).or(z.literal("")).optional(),
   upstream_pool: z.string().min(1, 'Upstream pool is required')
 }).refine((data) => {
   // If pathType is set (not empty), pathValue must also be set
-  if (data.pathType && data.pathType !== '') {
-    return data.pathValue && data.pathValue.length > 0
+  if (data.pathType) {
+    return !!data.pathValue && data.pathValue.length > 0
   }
   return true
 }, {
@@ -26,14 +29,22 @@ export const routeFormSchema = z.object({
   path: ['pathValue']
 }).refine((data) => {
   // Validate path format based on type
-  if (data.pathType && data.pathType !== '' && data.pathValue) {
-    if (!data.pathValue.startsWith('/')) {
-      return false
-    }
-    if (data.pathType === 'prefix' && data.pathValue !== '/' && !data.pathValue.endsWith('/')) {
-      return false
-    }
+  if (!data.pathType || !data.pathValue) {
+    return true
   }
+
+  if (data.pathType === 'regex') {
+    return data.pathValue.length > 0
+  }
+
+  if (!data.pathValue.startsWith('/')) {
+    return false
+  }
+
+  if (data.pathType === 'prefix') {
+    return data.pathValue === '/' || data.pathValue.endsWith('/')
+  }
+
   return true
 }, {
   message: 'Invalid path format for the selected type',

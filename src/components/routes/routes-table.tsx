@@ -114,6 +114,14 @@ export function RoutesTable({ routes, onEdit, onDelete, onDuplicate }: RoutesTab
       },
     },
     {
+      accessorKey: "algorithm",
+      header: "Algorithm",
+      cell: ({ row }) => {
+        const algorithm = row.original.algorithm ?? "round_robin";
+        return <Badge variant="secondary">{algorithm}</Badge>;
+      },
+    },
+    {
       accessorKey: "upstream_pool",
       header: "Upstream Pool",
       cell: ({ row }) => (

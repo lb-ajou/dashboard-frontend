@@ -43,16 +43,17 @@ export function RouteForm({
   onCancel,
   isSubmitting = false,
 }: RouteFormProps) {
-  const form = useForm<RouteFormValues>({
+  const form = useForm<RouteFormValues, unknown, RouteFormValues>({
     resolver: zodResolver(routeFormSchema),
     defaultValues: route
-      ? routeToFormData(route)
+      ? (routeToFormData(route) as RouteFormValues)
       : {
           id: "",
           enabled: true,
           hosts: [""],
           pathType: "",
           pathValue: "",
+          algorithm: "round_robin",
           upstream_pool: "",
         },
   })
@@ -223,6 +224,31 @@ export function RouteForm({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="algorithm"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Load Balancing Algorithm</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || "round_robin"}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select algorithm" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="round_robin">Round robin</SelectItem>
+                  <SelectItem value="sticky_cookie">Sticky cookie</SelectItem>
+                  <SelectItem value="5_tuple_hash">5-tuple hash</SelectItem>
+                  <SelectItem value="least_connection">Least connection</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>Server defaults to round robin when omitted.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
