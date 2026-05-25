@@ -131,11 +131,13 @@ export function useSaveConfig(namespace: string) {
 
   return useMutation({
     mutationFn: (request: NamespaceConfigPutRequest) => saveNamespaceConfig(namespace, request),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.config(namespace) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.namespaces });
-      queryClient.invalidateQueries({ queryKey: queryKeys.status });
-      queryClient.invalidateQueries({ queryKey: queryKeys.runtime });
+    onSuccess: async (savedConfig) => {
+      queryClient.setQueryData(queryKeys.config(namespace), savedConfig);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.namespaces }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.status }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.runtime }),
+      ]);
     },
   });
 }

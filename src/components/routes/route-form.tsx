@@ -95,7 +95,7 @@ export function RouteForm({
                 <Input
                   placeholder="e.g., r-api"
                   {...field}
-                  disabled={isEditing}
+                  disabled={isEditing || isSubmitting}
                 />
               </FormControl>
               <FormDescription>
@@ -121,6 +121,7 @@ export function RouteForm({
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
+                  disabled={isSubmitting}
                 />
               </FormControl>
             </FormItem>
@@ -144,6 +145,7 @@ export function RouteForm({
                       <Input
                         placeholder="e.g., api.example.com"
                         {...field}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     {hosts.length > 1 && (
@@ -152,6 +154,7 @@ export function RouteForm({
                         variant="ghost"
                         size="icon"
                         onClick={() => removeHost(index)}
+                        disabled={isSubmitting}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -168,6 +171,7 @@ export function RouteForm({
             size="sm"
             onClick={addHost}
             className="mt-2"
+            disabled={isSubmitting}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Host
@@ -188,6 +192,7 @@ export function RouteForm({
                     )
                   }
                   value={field.value === "" ? NO_PATH_MATCH_VALUE : field.value}
+                  disabled={isSubmitting}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -218,7 +223,7 @@ export function RouteForm({
                   <Input
                     placeholder={form.watch("pathType") === "prefix" ? "/api/" : "/path"}
                     {...field}
-                    disabled={!form.watch("pathType") || form.watch("pathType") === ""}
+                    disabled={isSubmitting || !form.watch("pathType") || form.watch("pathType") === ""}
                   />
                 </FormControl>
                 <FormMessage />
@@ -233,7 +238,7 @@ export function RouteForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Load Balancing Algorithm</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || "round_robin"}>
+              <Select onValueChange={field.onChange} value={field.value || "round_robin"} disabled={isSubmitting}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select algorithm" />
@@ -262,6 +267,7 @@ export function RouteForm({
                 onValueChange={field.onChange}
                 defaultValue={field.value}
                 value={field.value}
+                disabled={isSubmitting}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -285,7 +291,7 @@ export function RouteForm({
         />
 
         <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting}>
