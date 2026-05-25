@@ -1,55 +1,42 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Route, Server, Activity, CheckCircle } from "lucide-react"
-import type { Config } from "@/lib/types"
+import { Activity, CheckCircle, GitBranch, RadioTower, Route, Server } from "lucide-react"
+import type { StatusView } from "@/lib/api-types"
 
 interface StatsCardsProps {
-  config: Config | undefined
+  status: StatusView | undefined
   isLoading: boolean
 }
 
-export function StatsCards({ config, isLoading }: StatsCardsProps) {
-  const routes = config?.routes ?? []
-  const pools = config?.upstream_pools ?? {}
-
-  const totalRoutes = routes.length
-  const activeRoutes = routes.filter(r => r.enabled).length
-  const totalPools = Object.keys(pools).length
-
-  // Count total upstreams across all pools
-  const totalUpstreams = Object.values(pools).reduce(
-    (acc, pool) => acc + pool.upstreams.length,
-    0
-  )
-
-  // Count pools with health checks configured
-  const poolsWithHealthChecks = Object.values(pools).filter(
-    pool => pool.health_check
-  ).length
+export function StatsCards({ status, isLoading }: StatsCardsProps) {
+  const runtime = status?.runtime
+  const raft = status?.raft
+  const vip = status?.vip
+  const projection = status?.node.projection
 
   const stats = [
     {
-      title: "Total Routes",
-      value: isLoading ? "-" : totalRoutes,
-      description: `${isLoading ? "-" : activeRoutes} active`,
+      title: "Routes",
+      value: isLoading ? "-" : runtime?.route_count ?? 0,
+      description: `${isLoading ? "-" : runtime?.upstream_pool_count ?? 0} upstream pools`,
       icon: Route,
     },
     {
-      title: "Upstream Pools",
-      value: isLoading ? "-" : totalPools,
-      description: `${isLoading ? "-" : poolsWithHealthChecks} with health checks`,
-      icon: Server,
-    },
-    {
-      title: "Backend Servers",
-      value: isLoading ? "-" : totalUpstreams,
-      description: "Total upstreams",
+      title: "Targets",
+      value: isLoading ? "-" : runtime?.target_count ?? 0,
+      description: `${isLoading ? "-" : runtime?.healthy_target_count ?? 0} healthy / ${isLoading ? "-" : runtime?.unhealthy_target_count ?? 0} unhealthy`,
       icon: Activity,
     },
     {
-      title: "Active Routes",
-      value: isLoading ? "-" : activeRoutes,
-      description: `of ${isLoading ? "-" : totalRoutes} routes`,
-      icon: CheckCircle,
+      title: "Raft",
+      value: isLoading ? "-" : raft?.state ?? "unknown",
+      description: raft?.enabled ? raft.quorum_status : "disabled",
+      icon: GitBranch,
+    },
+    {
+      title: "VIP",
+      value: isLoading ? "-" : vip?.enabled ? (vip.owned ? "owned" : "standby") : "disabled",
+      description: vip?.last_error || vip?.address || projection?.status || "no VIP configured",
+      icon: vip?.owned ? CheckCircle : RadioTower,
     },
   ]
 

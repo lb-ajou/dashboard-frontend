@@ -14,9 +14,9 @@ export function ConfigViewer({ config, isLoading, namespace }: ConfigViewerProps
   return (
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
-        <CardTitle>Current Configuration</CardTitle>
+        <CardTitle>Desired Configuration</CardTitle>
         <CardDescription>
-          Read-only view of the {namespace} namespace configuration
+          Read-only desired state for the {namespace} namespace
         </CardDescription>
       </CardHeader>
       <CardContent>
