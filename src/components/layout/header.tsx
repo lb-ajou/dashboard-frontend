@@ -1,29 +1,37 @@
-import * as React from "react"
-import { Moon, Sun, Monitor } from "lucide-react"
-import { useTheme } from "next-themes"
+import * as React from "react";
+import { Moon, Sun, Monitor } from "lucide-react";
+import { useTheme } from "next-themes";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/dropdown-menu";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useStatus } from "@/hooks/use-config";
+import { getHeaderStatusDisplay } from "@/lib/header-status";
+import { NodeStatusSummary } from "@/components/layout/node-status-summary";
 
 export function Header() {
-  const { setTheme, theme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
+  const { setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+  const { data: status, isLoading: isStatusLoading, isError: isStatusError } = useStatus();
+  const statusDisplay = getHeaderStatusDisplay({
+    status,
+    isLoading: isStatusLoading,
+    isError: isStatusError,
+  });
 
   React.useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mr-2 h-4" />
+      <SidebarTrigger className="mr-2" />
+      <NodeStatusSummary display={statusDisplay} />
       <div className="flex-1" />
       {mounted && (
         <DropdownMenu>
@@ -51,5 +59,5 @@ export function Header() {
         </DropdownMenu>
       )}
     </header>
-  )
+  );
 }
