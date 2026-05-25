@@ -88,10 +88,14 @@ describe("config mutations", () => {
       upstreams: ["10.0.0.20:8080"],
       health_check: { path: "/health", interval: "30s", timeout: "3s", expect_status: 200 },
     };
+    const config = baseConfig();
 
-    const next = upsertPoolInConfig(baseConfig(), "pool-api", pool);
+    const updated = upsertPoolInConfig(config, "pool-api", pool);
+    const added = upsertPoolInConfig(config, "pool-new", pool);
 
-    expect(next.upstream_pools["pool-api"]).toEqual(pool);
+    expect(updated.upstream_pools["pool-api"]).toEqual(pool);
+    expect(added.upstream_pools["pool-new"]).toEqual(pool);
+    expect(Object.keys(config.upstream_pools)).toEqual(["pool-api", "pool-web"]);
   });
 
   test("deletes an unused upstream pool", () => {
