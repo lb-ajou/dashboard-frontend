@@ -1,61 +1,31 @@
-export interface Config {
-  namespace?: string;
-  exists?: boolean;
-  applied_at?: string;
-  routes: Route[];
-  upstream_pools: Record<string, UpstreamPool>;
-}
+import type {
+  HealthCheckConfig,
+  NamespaceConfigView,
+  NamespaceView,
+  PathMatchConfig,
+  PathMatchType,
+  RouteAlgorithm,
+  RouteConfig,
+  RouteMatchConfig,
+  UpstreamPoolConfig,
+} from "@/lib/api-types";
 
-export interface NamespaceSummary {
-  namespace: string;
-  path: string;
-  exists?: boolean;
-  route_count?: number;
-  upstream_pool_count?: number;
-}
-
-export interface NamespaceCreateResponse {
-  namespace: string;
-  path: string;
-  exists?: boolean;
-  route_count?: number;
-  upstream_pool_count?: number;
-}
+export type Config = NamespaceConfigView;
+export type NamespaceSummary = NamespaceView;
+export type NamespaceCreateResponse = NamespaceView;
 
 export interface NamespaceListResponse {
   items: NamespaceSummary[];
+  default_namespace?: string;
 }
 
-export interface Route {
-  id: string;
-  enabled: boolean;
-  match: RouteMatch;
-  upstream_pool: string;
-}
+export type Route = RouteConfig;
+export type RouteMatch = RouteMatchConfig;
+export type PathMatch = PathMatchConfig;
+export type UpstreamPool = UpstreamPoolConfig;
+export type HealthCheck = HealthCheckConfig;
 
-export interface RouteMatch {
-  hosts: string[];
-  path?: PathMatch;
-}
-
-export type PathMatchType = "exact" | "prefix" | "regex";
-
-export interface PathMatch {
-  type: PathMatchType;
-  value: string;
-}
-
-export interface UpstreamPool {
-  upstreams: string[];
-  health_check?: HealthCheck;
-}
-
-export interface HealthCheck {
-  path: string;
-  interval: string; // Duration (e.g., "30s")
-  timeout: string; // Duration (e.g., "3s")
-  expect_status: number;
-}
+export type { PathMatchType, RouteAlgorithm };
 
 // Form data types for creating/editing
 export interface RouteFormData {
@@ -64,6 +34,7 @@ export interface RouteFormData {
   hosts: string[];
   pathType: PathMatchType | "";
   pathValue: string;
+  algorithm: RouteAlgorithm | "";
   upstream_pool: string;
 }
 
@@ -85,6 +56,7 @@ export function routeToFormData(route: Route): RouteFormData {
     hosts: route.match.hosts,
     pathType: route.match.path?.type ?? "",
     pathValue: route.match.path?.value ?? "",
+    algorithm: route.algorithm ?? "",
     upstream_pool: route.upstream_pool,
   };
 }
@@ -99,9 +71,13 @@ export function formDataToRoute(formData: RouteFormData): Route {
     upstream_pool: formData.upstream_pool,
   };
 
+  if (formData.algorithm) {
+    route.algorithm = formData.algorithm;
+  }
+
   if (formData.pathType && formData.pathValue) {
     route.match.path = {
-      type: formData.pathType as PathMatchType,
+      type: formData.pathType,
       value: formData.pathValue,
     };
   }
