@@ -8,6 +8,7 @@ interface ClusterSummaryProps {
 
 export function ClusterSummary({ displayState }: ClusterSummaryProps) {
   const items = [
+    { title: "Enabled", value: displayState.summary.enabled },
     { title: "Mode", value: displayState.summary.mode },
     { title: "Quorum", value: displayState.summary.quorum },
     { title: "Leader", value: displayState.summary.leader },
@@ -15,7 +16,7 @@ export function ClusterSummary({ displayState }: ClusterSummaryProps) {
   ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       {items.map((item) => (
         <Card key={item.title}>
           <CardHeader className="pb-2">

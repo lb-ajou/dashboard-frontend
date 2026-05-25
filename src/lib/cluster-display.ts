@@ -8,6 +8,7 @@ interface ClusterDisplayStateInput {
 
 export interface ClusterDisplayState {
   summary: {
+    enabled: string
     mode: string
     quorum: string
     leader: string
@@ -27,6 +28,7 @@ export function getClusterDisplayState({
   if (isLoading) {
     return {
       summary: {
+        enabled: "Loading...",
         mode: "Loading...",
         quorum: "Loading...",
         leader: "Loading...",
@@ -42,6 +44,7 @@ export function getClusterDisplayState({
   if (isError || !cluster) {
     return {
       summary: {
+        enabled: "Unavailable",
         mode: "Unavailable",
         quorum: "Unavailable",
         leader: "Unavailable",
@@ -57,6 +60,7 @@ export function getClusterDisplayState({
   if (!cluster.enabled) {
     return {
       summary: {
+        enabled: "no",
         mode: "file",
         quorum: cluster.quorum_status ?? "disabled",
         leader: cluster.leader.id ?? "none",
@@ -70,6 +74,7 @@ export function getClusterDisplayState({
 
   return {
     summary: {
+      enabled: "yes",
       mode: "raft",
       quorum: cluster.quorum_status ?? "unknown",
       leader: cluster.leader.id ?? "unknown",

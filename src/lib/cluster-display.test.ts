@@ -31,6 +31,7 @@ describe("cluster display state", () => {
     const state = getClusterDisplayState({ cluster: undefined, isLoading: true, isError: false })
 
     expect(state.summary).toEqual({
+      enabled: "Loading...",
       mode: "Loading...",
       quorum: "Loading...",
       leader: "Loading...",
@@ -45,6 +46,7 @@ describe("cluster display state", () => {
     const state = getClusterDisplayState({ cluster: undefined, isLoading: false, isError: true })
 
     expect(state.summary).toEqual({
+      enabled: "Unavailable",
       mode: "Unavailable",
       quorum: "Unavailable",
       leader: "Unavailable",
@@ -62,6 +64,7 @@ describe("cluster display state", () => {
       isError: false,
     })
 
+    expect(state.summary.enabled).toBe("no")
     expect(state.summary.mode).toBe("file")
     expect(state.summary.quorum).toBe("disabled")
     expect(state.membersMessage).toBe("Raft is disabled in file mode.")
@@ -73,6 +76,7 @@ describe("cluster display state", () => {
     const state = getClusterDisplayState({ cluster: raftCluster(), isLoading: false, isError: false })
 
     expect(state.summary).toEqual({
+      enabled: "yes",
       mode: "raft",
       quorum: "available",
       leader: "node-1",

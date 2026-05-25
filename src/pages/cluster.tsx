@@ -57,6 +57,10 @@ export function ClusterPage() {
                     <span>{cluster?.local.term ?? "-"}</span>
                   </div>
                   <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">Last Log</span>
+                    <span>{cluster?.local.last_log_index ?? "-"}</span>
+                  </div>
+                  <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">Commit</span>
                     <span>{cluster?.local.commit_index ?? "-"}</span>
                   </div>
