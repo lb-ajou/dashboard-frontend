@@ -29,8 +29,8 @@ export function MembersTable({ members, emptyMessage = "No cluster members repor
             {members.length ? (
               members.map((member) => (
                 <TableRow key={member.id}>
-                  <TableCell className="font-mono">{member.id}</TableCell>
-                  <TableCell className="font-mono">{member.address}</TableCell>
+                  <TableCell className="max-w-64 truncate font-mono">{member.id}</TableCell>
+                  <TableCell className="max-w-64 truncate font-mono">{member.address}</TableCell>
                   <TableCell>
                     <Badge variant="secondary">{member.role}</Badge>
                   </TableCell>

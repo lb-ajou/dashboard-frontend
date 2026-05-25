@@ -11,16 +11,28 @@ interface JoinNodeFormProps {
   disabledReason?: string
 }
 
+interface CanSubmitJoinNodeInput {
+  disabled: boolean
+  isPending: boolean
+  nodeId: string
+  raftAddress: string
+}
+
+export function canSubmitJoinNode({ disabled, isPending, nodeId, raftAddress }: CanSubmitJoinNodeInput) {
+  return !disabled && !isPending && Boolean(nodeId.trim()) && Boolean(raftAddress.trim())
+}
+
 export function JoinNodeForm({ disabled = false, disabledReason }: JoinNodeFormProps) {
   const joinCluster = useJoinCluster()
   const [nodeId, setNodeId] = React.useState("")
   const [raftAddress, setRaftAddress] = React.useState("")
   const isDisabled = disabled || joinCluster.isPending
+  const canSubmit = canSubmitJoinNode({ disabled, isPending: joinCluster.isPending, nodeId, raftAddress })
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (disabled) {
+    if (!canSubmit) {
       return
     }
 
@@ -67,7 +79,7 @@ export function JoinNodeForm({ disabled = false, disabledReason }: JoinNodeFormP
             />
           </div>
           {disabledReason ? <p className="text-sm text-muted-foreground">{disabledReason}</p> : null}
-          <Button type="submit" disabled={isDisabled || !nodeId.trim() || !raftAddress.trim()}>
+          <Button type="submit" disabled={!canSubmit}>
             {joinCluster.isPending ? "Joining..." : "Join Cluster"}
           </Button>
         </form>

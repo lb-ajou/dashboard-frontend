@@ -46,7 +46,7 @@ export function ClusterPage() {
                 <>
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">Address</span>
-                    <span className="truncate font-mono">{cluster?.local.address ?? "-"}</span>
+                    <span className="min-w-0 truncate font-mono">{cluster?.local.address ?? "-"}</span>
                   </div>
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">State</span>

@@ -22,8 +22,10 @@ export function ClusterSummary({ displayState }: ClusterSummaryProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Badge variant="outline">{item.value}</Badge>
+          <CardContent className="min-w-0">
+            <Badge variant="outline" className="max-w-full truncate">
+              {item.value}
+            </Badge>
           </CardContent>
         </Card>
       ))}
