@@ -105,6 +105,11 @@ export function UpstreamsPage() {
     }
 
     try {
+      if (!editingPoolId && Object.prototype.hasOwnProperty.call(config.upstream_pools, id)) {
+        window.alert(formatApiError(new Error(`Upstream pool id already exists: ${id}`)));
+        return;
+      }
+
       const nextConfig = editingPoolId
         ? renamePoolInConfig(config, editingPoolId, id, poolData)
         : upsertPoolInConfig(config, id, poolData);

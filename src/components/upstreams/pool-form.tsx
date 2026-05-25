@@ -86,11 +86,11 @@ export function PoolForm({
                 <Input
                   placeholder="e.g., pool-api"
                   {...field}
-                  disabled={!!poolId || isSubmitting}
+                  disabled={isSubmitting}
                 />
               </FormControl>
               <FormDescription>
-                Unique identifier for this upstream pool
+                Unique identifier for this upstream pool; changing it renames the pool
               </FormDescription>
               <FormMessage />
             </FormItem>
