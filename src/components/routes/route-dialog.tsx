@@ -2,6 +2,7 @@ import * as React from "react"
 
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -33,7 +34,7 @@ export function RouteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="grid-rows-[auto_minmax(0,1fr)] overflow-hidden sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
             {route ? "Edit Route" : "Create Route"}
@@ -44,13 +45,15 @@ export function RouteDialog({
               : "Add a new route to your reverse proxy"}
           </DialogDescription>
         </DialogHeader>
-        <RouteForm
-          route={route}
-          upstreamPoolIds={upstreamPoolIds}
-          onSubmit={handleSubmit}
-          onCancel={() => onOpenChange(false)}
-          isSubmitting={isSubmitting}
-        />
+        <DialogBody>
+          <RouteForm
+            route={route}
+            upstreamPoolIds={upstreamPoolIds}
+            onSubmit={handleSubmit}
+            onCancel={() => onOpenChange(false)}
+            isSubmitting={isSubmitting}
+          />
+        </DialogBody>
       </DialogContent>
     </Dialog>
   )

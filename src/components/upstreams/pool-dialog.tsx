@@ -2,6 +2,7 @@ import * as React from "react"
 
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -33,7 +34,7 @@ export function PoolDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="grid-rows-[auto_minmax(0,1fr)] overflow-hidden sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
             {poolId ? "Edit Upstream Pool" : "Create Upstream Pool"}
@@ -44,13 +45,15 @@ export function PoolDialog({
               : "Add a new upstream pool to your reverse proxy"}
           </DialogDescription>
         </DialogHeader>
-        <PoolForm
-          poolId={poolId}
-          pool={pool}
-          onSubmit={handleSubmit}
-          onCancel={() => onOpenChange(false)}
-          isSubmitting={isSubmitting}
-        />
+        <DialogBody>
+          <PoolForm
+            poolId={poolId}
+            pool={pool}
+            onSubmit={handleSubmit}
+            onCancel={() => onOpenChange(false)}
+            isSubmitting={isSubmitting}
+          />
+        </DialogBody>
       </DialogContent>
     </Dialog>
   )
