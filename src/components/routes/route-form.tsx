@@ -53,6 +53,7 @@ export function RouteForm({
           hosts: [""],
           pathType: "",
           pathValue: "",
+          algorithm: "round_robin",
           upstream_pool: "",
         },
   })
@@ -223,6 +224,37 @@ export function RouteForm({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="algorithm"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Algorithm</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an algorithm" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="round_robin">Round robin</SelectItem>
+                  <SelectItem value="sticky_cookie">Sticky cookie</SelectItem>
+                  <SelectItem value="5_tuple_hash">5-tuple hash</SelectItem>
+                  <SelectItem value="least_connection">Least connection</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Load-balancing algorithm for this route
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}

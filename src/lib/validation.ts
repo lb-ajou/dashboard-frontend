@@ -10,14 +10,19 @@ const hostPortRegex = /^(\[([0-9a-fA-F:]+)\]|([^:[\]]+)):(\d+)$/
 export const routeFormSchema = z.object({
   id: z.string().min(1, 'Route ID is required'),
   enabled: z.boolean(),
-  hosts: z.array(z.string().min(1, 'Host cannot be empty'))
+  hosts: z.array(
+    z.string()
+      .min(1, 'Host cannot be empty')
+      .refine((host) => !host.includes('*'), 'Wildcard hosts are not supported')
+  )
     .min(1, 'At least one host is required'),
-  pathType: z.string().optional(), // Can be 'exact', 'prefix', 'regex', or empty
+  pathType: z.enum(['', 'exact', 'prefix', 'regex']),
   pathValue: z.string().optional(),
+  algorithm: z.enum(['round_robin', 'sticky_cookie', '5_tuple_hash', 'least_connection']),
   upstream_pool: z.string().min(1, 'Upstream pool is required')
 }).refine((data) => {
   // If pathType is set (not empty), pathValue must also be set
-  if (data.pathType && data.pathType !== '') {
+  if (data.pathType) {
     return data.pathValue && data.pathValue.length > 0
   }
   return true
@@ -26,7 +31,7 @@ export const routeFormSchema = z.object({
   path: ['pathValue']
 }).refine((data) => {
   // Validate path format based on type
-  if (data.pathType && data.pathType !== '' && data.pathValue) {
+  if (data.pathType && data.pathValue) {
     if (!data.pathValue.startsWith('/')) {
       return false
     }

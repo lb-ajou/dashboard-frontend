@@ -38,9 +38,10 @@ interface RoutesTableProps {
   onEdit: (route: Route) => void
   onDelete: (route: Route) => void
   onDuplicate: (route: Route) => void
+  canWrite?: boolean
 }
 
-export function RoutesTable({ routes, onEdit, onDelete, onDuplicate }: RoutesTableProps) {
+export function RoutesTable({ routes, onEdit, onDelete, onDuplicate, canWrite = true }: RoutesTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -114,6 +115,15 @@ export function RoutesTable({ routes, onEdit, onDelete, onDuplicate }: RoutesTab
       },
     },
     {
+      accessorKey: "algorithm",
+      header: "Algorithm",
+      cell: ({ row }) => (
+        <Badge variant="secondary">
+          {row.original.algorithm ?? "round_robin"}
+        </Badge>
+      ),
+    },
+    {
       accessorKey: "upstream_pool",
       header: "Upstream Pool",
       cell: ({ row }) => (
@@ -135,16 +145,17 @@ export function RoutesTable({ routes, onEdit, onDelete, onDuplicate }: RoutesTab
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(route)}>
+              <DropdownMenuItem disabled={!canWrite} onClick={() => onEdit(route)}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDuplicate(route)}>
+              <DropdownMenuItem disabled={!canWrite} onClick={() => onDuplicate(route)}>
                 <Copy className="mr-2 h-4 w-4" />
                 Duplicate
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
+                disabled={!canWrite}
                 onClick={() => onDelete(route)}
                 className="text-destructive"
               >
