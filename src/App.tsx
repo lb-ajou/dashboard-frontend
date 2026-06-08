@@ -1,13 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Layout } from "@/components/layout/layout"
-import { DashboardPage } from "@/pages/dashboard"
-import { RoutesPage } from "@/pages/routes"
-import { UpstreamsPage } from "@/pages/upstreams"
-import { NamespaceEntryPage } from "@/pages/namespace-entry"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import "./index.css"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Layout } from "@/components/layout/layout";
+import { AppEntryPage } from "@/pages/app-entry";
+import { SetupPage } from "@/pages/setup";
+import { OverviewPage } from "@/pages/overview";
+import { RoutesPage } from "@/pages/routes";
+import { UpstreamsPage } from "@/pages/upstreams";
+import { NodePage } from "@/pages/node";
+import "./index.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,7 +18,7 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
-})
+});
 
 export function App() {
   return (
@@ -31,20 +33,21 @@ export function App() {
         <TooltipProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<NamespaceEntryPage />} />
-              <Route path="/routes" element={<NamespaceEntryPage subpath="routes" />} />
-              <Route path="/upstreams" element={<NamespaceEntryPage subpath="upstreams" />} />
-              <Route path="/namespaces/:namespace" element={<Layout />}>
-                <Route index element={<DashboardPage />} />
-                <Route path="routes" element={<RoutesPage />} />
-                <Route path="upstreams" element={<UpstreamsPage />} />
+              <Route path="/" element={<AppEntryPage />} />
+              <Route path="/setup" element={<SetupPage />} />
+              <Route element={<Layout />}>
+                <Route path="/overview" element={<OverviewPage />} />
+                <Route path="/routes" element={<RoutesPage />} />
+                <Route path="/upstreams" element={<UpstreamsPage />} />
+                <Route path="/node" element={<NodePage />} />
+                <Route path="/cluster" element={<Navigate to="/node" replace />} />
               </Route>
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
-  )
+  );
 }
 
-export default App
+export default App;
