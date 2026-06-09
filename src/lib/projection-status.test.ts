@@ -6,7 +6,6 @@ function status(projection: StatusView["node"]["projection"]): StatusView {
   return {
     node: {
       id: "node-1",
-      config_store: "raft",
       proxy_listen_addr: ":8080",
       dashboard_listen_addr: ":9090",
       applied_at: "2026-06-08T15:35:36.400776+09:00",

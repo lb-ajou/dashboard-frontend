@@ -211,7 +211,6 @@ export function NodePage() {
               <DetailRow label="Raft address" value={displayValue(cluster?.local.address)} />
               <DetailRow label="Proxy listener" value={displayValue(status?.node.proxy_listen_addr)} />
               <DetailRow label="Dashboard listener" value={displayValue(status?.node.dashboard_listen_addr)} />
-              <DetailRow label="Config store" value={displayValue(status?.node.config_store)} />
             </div>
             <Separator />
             <div className="flex flex-col gap-3">

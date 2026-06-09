@@ -80,7 +80,6 @@ export interface StatusView {
 
 export interface StatusNodeView {
   id?: string;
-  config_store: "raft" | string;
   proxy_listen_addr: string;
   dashboard_listen_addr: string;
   applied_at: ISODateTime;
@@ -120,20 +119,8 @@ export interface StatusRuntimeView {
 
 export interface RuntimeView {
   applied_at: ISODateTime;
-  node: RuntimeNodeView;
-  config: RuntimeConfigView;
   routes: RuntimeRouteView[];
   upstreams: RuntimeUpstreamView[];
-}
-
-export interface RuntimeNodeView {
-  id?: string;
-  config_store: "raft" | string;
-}
-
-export interface RuntimeConfigView {
-  route_count: number;
-  upstream_pool_count: number;
 }
 
 export interface RuntimeRouteView {
