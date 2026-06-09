@@ -47,7 +47,7 @@ export function getUpstreamTargetRuntimeStatuses({
     return fixedState(upstreams, "unknown");
   }
 
-  const runtimePool = runtimeUpstreams?.find((upstream) => upstream.local_id === poolId);
+  const runtimePool = runtimeUpstreams?.find((upstream) => upstream.id === poolId);
 
   if (!runtimePool) {
     return fixedState(upstreams, "not_applied");

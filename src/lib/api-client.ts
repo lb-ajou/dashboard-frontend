@@ -2,10 +2,10 @@ import type {
   APIError,
   ClusterBootstrapRequest,
   ClusterView,
-  NamespaceConfigView,
+  ConfigRequest,
+  ConfigView,
   NodeClusterStatusView,
   NodeJoinClusterRequest,
-  ReplaceConfigRequest,
   RuntimeView,
   StatusView,
   ValidationError,
@@ -13,8 +13,6 @@ import type {
 
 export const API_BASE_URL =
   typeof process !== "undefined" && process.env.BUN_PUBLIC_API_BASE_URL ? process.env.BUN_PUBLIC_API_BASE_URL : "/api";
-
-const CONFIG_COMPATIBILITY_PATH = "/namespaces/default/config";
 
 type RequestBody = unknown;
 
@@ -63,7 +61,12 @@ async function parseErrorPayload(response: Response): Promise<Partial<APIError> 
   }
 }
 
-export async function requestJSON<T>(method: string, path: string, body: RequestBody | undefined, fallbackMessage: string): Promise<T> {
+export async function requestJSON<T>(
+  method: string,
+  path: string,
+  body: RequestBody | undefined,
+  fallbackMessage: string,
+): Promise<T> {
   const init: RequestInit = { method };
 
   if (body !== undefined) {
@@ -104,10 +107,6 @@ export function apiPostNoContent(path: string, body: RequestBody, fallbackMessag
   return requestJSON<void>("POST", path, body, fallbackMessage);
 }
 
-export function configPathForTesting() {
-  return CONFIG_COMPATIBILITY_PATH;
-}
-
 export function fetchStatus() {
   return apiGet<StatusView>("/status", "Failed to fetch status");
 }
@@ -125,11 +124,11 @@ export function fetchNodeClusterStatus() {
 }
 
 export function fetchConfig() {
-  return apiGet<NamespaceConfigView>(CONFIG_COMPATIBILITY_PATH, "Failed to fetch configuration");
+  return apiGet<ConfigView>("/config", "Failed to fetch configuration");
 }
 
-export function saveConfig(config: ReplaceConfigRequest) {
-  return apiPut<NamespaceConfigView>(CONFIG_COMPATIBILITY_PATH, config, "Failed to save configuration");
+export function saveConfig(config: ConfigRequest) {
+  return apiPut<ConfigView>("/config", config, "Failed to save configuration");
 }
 
 export function bootstrapCluster(request: ClusterBootstrapRequest) {

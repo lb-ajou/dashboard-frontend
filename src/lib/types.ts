@@ -1,6 +1,6 @@
 import type { PathMatchType, RouteAlgorithm, RouteConfig, UpstreamPool } from "@/lib/api-types";
 
-export type Config = import("@/lib/api-types").NamespaceConfigView;
+export type Config = import("@/lib/api-types").ConfigView;
 export type Route = RouteConfig;
 export type { PathMatchType, RouteAlgorithm, UpstreamPool };
 export type HealthCheck = import("@/lib/api-types").HealthCheckConfig;

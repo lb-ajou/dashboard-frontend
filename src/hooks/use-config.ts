@@ -10,7 +10,7 @@ import {
   joinCluster,
   saveConfig,
 } from "@/lib/api-client";
-import type { ClusterBootstrapRequest, NodeJoinClusterRequest, ReplaceConfigRequest } from "@/lib/api-types";
+import type { ClusterBootstrapRequest, ConfigRequest, NodeJoinClusterRequest } from "@/lib/api-types";
 
 export const queryKeys = {
   nodeClusterStatus: ["node", "cluster-status"] as const,
@@ -92,7 +92,7 @@ export function useConfig() {
 export function useSaveConfig() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: ReplaceConfigRequest) => saveConfig(request),
+    mutationFn: (request: ConfigRequest) => saveConfig(request),
     onSuccess: (config) => {
       queryClient.setQueryData(queryKeys.config, config);
       queryClient.invalidateQueries({ queryKey: queryKeys.config });

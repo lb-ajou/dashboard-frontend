@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { NamespaceConfigView, RouteConfig, UpstreamPool } from "./api-types";
+import type { ConfigView, RouteConfig, UpstreamPool } from "./api-types";
 import {
   addRoute,
   addUpstreamPool,
@@ -10,10 +10,8 @@ import {
   toReplaceConfigRequest,
 } from "./config-mutations";
 
-function config(): NamespaceConfigView {
+function config(): ConfigView {
   return {
-    namespace: "default",
-    exists: true,
     applied_at: "2026-06-08T00:00:00Z",
     routes: [
       {

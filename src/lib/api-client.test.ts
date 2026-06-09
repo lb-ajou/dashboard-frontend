@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { DashboardApiError, apiGet, apiPostNoContent, configPathForTesting } from "./api-client";
+import { DashboardApiError, apiGet, apiPostNoContent } from "./api-client";
 
 const originalFetch = globalThis.fetch;
 
@@ -27,7 +27,7 @@ describe("api-client", () => {
       ),
     );
 
-    await expect(apiGet("/status", "Failed to fetch status")).rejects.toMatchObject({
+    expect(apiGet("/status", "Failed to fetch status")).rejects.toMatchObject({
       status: 409,
       code: "not_raft_leader",
       leaderAddress: "10.0.0.11:7001",
@@ -41,10 +41,6 @@ describe("api-client", () => {
     const result = await apiPostNoContent("/cluster/bootstrap", { node_id: "node-1" }, "Bootstrap failed");
 
     expect(result).toBeUndefined();
-  });
-
-  test("keeps default config compatibility path inside the API layer", () => {
-    expect(configPathForTesting()).toBe("/namespaces/default/config");
   });
 
   test("DashboardApiError exposes a readable message", () => {

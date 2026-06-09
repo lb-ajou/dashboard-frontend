@@ -1,4 +1,4 @@
-import type { NamespaceConfigView, ReplaceConfigRequest, RouteConfig, UpstreamPool } from "@/lib/api-types";
+import type { ConfigRequest, ConfigView, RouteConfig, UpstreamPool } from "@/lib/api-types";
 
 function cloneRoute(route: RouteConfig): RouteConfig {
   return {
@@ -19,7 +19,7 @@ function cloneUpstreamPool(pool: UpstreamPool): UpstreamPool {
   };
 }
 
-function cloneConfig(config: NamespaceConfigView): NamespaceConfigView {
+function cloneConfig(config: ConfigView): ConfigView {
   return {
     ...config,
     routes: config.routes.map(cloneRoute),
@@ -29,7 +29,7 @@ function cloneConfig(config: NamespaceConfigView): NamespaceConfigView {
   };
 }
 
-export function toReplaceConfigRequest(config: NamespaceConfigView): ReplaceConfigRequest {
+export function toReplaceConfigRequest(config: ConfigView): ConfigRequest {
   const next = cloneConfig(config);
 
   return {
@@ -38,7 +38,7 @@ export function toReplaceConfigRequest(config: NamespaceConfigView): ReplaceConf
   };
 }
 
-export function addRoute(config: NamespaceConfigView, route: RouteConfig): NamespaceConfigView {
+export function addRoute(config: ConfigView, route: RouteConfig): ConfigView {
   if (config.routes.some((existingRoute) => existingRoute.id === route.id)) {
     throw new Error(`Route ${route.id} already exists`);
   }
@@ -49,10 +49,10 @@ export function addRoute(config: NamespaceConfigView, route: RouteConfig): Names
 }
 
 export function replaceRoute(
-  config: NamespaceConfigView,
+  config: ConfigView,
   previousRouteId: string,
   route: RouteConfig,
-): NamespaceConfigView {
+): ConfigView {
   const routeIndex = config.routes.findIndex((existingRoute) => existingRoute.id === previousRouteId);
 
   if (routeIndex === -1) {
@@ -68,17 +68,17 @@ export function replaceRoute(
   return next;
 }
 
-export function deleteRoute(config: NamespaceConfigView, routeId: string): NamespaceConfigView {
+export function deleteRoute(config: ConfigView, routeId: string): ConfigView {
   const next = cloneConfig(config);
   next.routes = next.routes.filter((route) => route.id !== routeId);
   return next;
 }
 
 export function addUpstreamPool(
-  config: NamespaceConfigView,
+  config: ConfigView,
   poolId: string,
   pool: UpstreamPool,
-): NamespaceConfigView {
+): ConfigView {
   if (config.upstream_pools[poolId]) {
     throw new Error(`Upstream pool ${poolId} already exists`);
   }
@@ -89,11 +89,11 @@ export function addUpstreamPool(
 }
 
 export function replaceUpstreamPool(
-  config: NamespaceConfigView,
+  config: ConfigView,
   previousPoolId: string,
   nextPoolId: string,
   pool: UpstreamPool,
-): NamespaceConfigView {
+): ConfigView {
   if (!config.upstream_pools[previousPoolId]) {
     throw new Error(`Upstream pool ${previousPoolId} does not exist`);
   }
@@ -111,7 +111,7 @@ export function replaceUpstreamPool(
   return next;
 }
 
-export function deleteUpstreamPool(config: NamespaceConfigView, poolId: string): NamespaceConfigView {
+export function deleteUpstreamPool(config: ConfigView, poolId: string): ConfigView {
   const referencedRoute = config.routes.find((route) => route.upstream_pool === poolId);
 
   if (referencedRoute) {

@@ -1,17 +1,17 @@
-import type { NamespaceConfigView, ReplaceConfigRequest } from "@/lib/api-types";
+import type { ConfigRequest, ConfigView } from "@/lib/api-types";
 import { toReplaceConfigRequest } from "@/lib/config-mutations";
 
-const metadataKeys = ["namespace", "exists", "applied_at"];
+const metadataKeys = ["applied_at", "name", "namespace", "exists", "path", "default_namespace"];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-export function buildConfigExport(config: NamespaceConfigView): ReplaceConfigRequest {
+export function buildConfigExport(config: ConfigView): ConfigRequest {
   return toReplaceConfigRequest(config);
 }
 
-export function parseConfigImport(text: string): ReplaceConfigRequest {
+export function parseConfigImport(text: string): ConfigRequest {
   let parsed: unknown;
 
   try {
@@ -37,8 +37,8 @@ export function parseConfigImport(text: string): ReplaceConfigRequest {
   }
 
   return {
-    routes: parsed.routes as ReplaceConfigRequest["routes"],
-    upstream_pools: parsed.upstream_pools as ReplaceConfigRequest["upstream_pools"],
+    routes: parsed.routes as ConfigRequest["routes"],
+    upstream_pools: parsed.upstream_pools as ConfigRequest["upstream_pools"],
   };
 }
 
@@ -46,7 +46,7 @@ export function configExportFilename(date = new Date()) {
   return `ajoulb-config-${date.toISOString().slice(0, 10)}.json`;
 }
 
-export function configImportConfirmationMessage(request: ReplaceConfigRequest) {
+export function configImportConfirmationMessage(request: ConfigRequest) {
   const routeCount = request.routes.length;
   const upstreamCount = Object.keys(request.upstream_pools).length;
 

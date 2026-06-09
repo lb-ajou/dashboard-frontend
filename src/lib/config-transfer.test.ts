@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { NamespaceConfigView } from "./api-types";
+import type { ConfigView } from "./api-types";
 import {
   buildConfigExport,
   configExportFilename,
@@ -7,10 +7,8 @@ import {
   parseConfigImport,
 } from "./config-transfer";
 
-function config(): NamespaceConfigView {
+function config(): ConfigView {
   return {
-    namespace: "default",
-    exists: true,
     applied_at: "2026-06-08T00:00:00Z",
     routes: [
       {
@@ -51,16 +49,17 @@ describe("config transfer", () => {
   test("rejects raw config view metadata during import", () => {
     expect(() => parseConfigImport(JSON.stringify(buildConfigExport(config())))).not.toThrow();
 
-    expect(() =>
-      parseConfigImport(
-        JSON.stringify({
-          exists: true,
-          applied_at: "2026-06-08T00:00:00Z",
-          routes: [],
-          upstream_pools: {},
-        }),
-      ),
-    ).toThrow("routes and upstream_pools");
+    for (const key of ["applied_at", "name", "namespace", "exists", "path", "default_namespace"]) {
+      expect(() =>
+        parseConfigImport(
+          JSON.stringify({
+            [key]: "forbidden",
+            routes: [],
+            upstream_pools: {},
+          }),
+        ),
+      ).toThrow("routes and upstream_pools");
+    }
   });
 
   test("rejects invalid json and invalid payload shapes", () => {

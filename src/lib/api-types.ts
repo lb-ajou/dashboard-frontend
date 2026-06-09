@@ -1,6 +1,5 @@
 export type ISODateTime = string;
 export type DurationString = string;
-export type NamespaceName = string;
 export type RouteID = string;
 export type UpstreamPoolID = string;
 
@@ -13,7 +12,6 @@ export interface APIError {
 
 export type APIErrorCode =
   | "invalid_request"
-  | "invalid_namespace"
   | "invalid_node_id"
   | "invalid_raft_address"
   | "invalid_vip"
@@ -28,20 +26,16 @@ export interface ValidationError {
   message: string;
 }
 
-export interface NamespaceConfigView {
-  namespace: NamespaceName;
-  exists: boolean;
+export interface ConfigView {
   routes: RouteConfig[];
   upstream_pools: Record<UpstreamPoolID, UpstreamPool>;
   applied_at?: ISODateTime;
 }
 
-export interface ReplaceConfigRequest {
+export interface ConfigRequest {
   routes: RouteConfig[];
   upstream_pools: Record<UpstreamPoolID, UpstreamPool>;
 }
-
-export type ReplaceNamespaceConfigRequest = ReplaceConfigRequest;
 
 export interface RouteConfig {
   id: RouteID;
@@ -127,7 +121,7 @@ export interface StatusRuntimeView {
 export interface RuntimeView {
   applied_at: ISODateTime;
   node: RuntimeNodeView;
-  config_sources: RuntimeConfigSourceView[];
+  config: RuntimeConfigView;
   routes: RuntimeRouteView[];
   upstreams: RuntimeUpstreamView[];
 }
@@ -137,18 +131,13 @@ export interface RuntimeNodeView {
   config_store: "raft" | string;
 }
 
-export interface RuntimeConfigSourceView {
-  source: string;
-  path?: string;
-  name?: string;
+export interface RuntimeConfigView {
   route_count: number;
   upstream_pool_count: number;
 }
 
 export interface RuntimeRouteView {
-  global_id: string;
-  local_id: string;
-  source: string;
+  id: string;
   enabled: boolean;
   hosts: string[];
   path: RuntimePathMatcherView;
@@ -162,18 +151,9 @@ export interface RuntimePathMatcherView {
 }
 
 export interface RuntimeUpstreamView {
-  global_id: string;
-  local_id: string;
-  source: string;
+  id: string;
   targets: RuntimeTargetView[];
-  health_check?: RuntimeHealthCheckView;
-}
-
-export interface RuntimeHealthCheckView {
-  path: string;
-  interval: DurationString;
-  timeout: DurationString;
-  expect_status: number;
+  health_check?: HealthCheckConfig;
 }
 
 export interface RuntimeTargetView {

@@ -4,9 +4,7 @@ import { getUpstreamTargetRuntimeStatuses } from "./upstream-runtime-status";
 
 const runtimeUpstreams: RuntimeUpstreamView[] = [
   {
-    global_id: "default:dashboard",
-    local_id: "dashboard",
-    source: "default",
+    id: "dashboard",
     targets: [
       {
         address: "localhost:3000",
@@ -30,7 +28,7 @@ const runtimeUpstreams: RuntimeUpstreamView[] = [
 ];
 
 describe("getUpstreamTargetRuntimeStatuses", () => {
-  test("matches desired targets to runtime target health by pool local id and address", () => {
+  test("matches desired targets to runtime target health by pool id and address", () => {
     expect(
       getUpstreamTargetRuntimeStatuses({
         poolId: "dashboard",
